@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Tech | Illusory stillness]]></title>
+  <link href="http://crowding.github.io/blog/categories/tech/atom.xml" rel="self"/>
+  <link href="http://crowding.github.io/"/>
+  <updated>2014-06-10T23:07:57-07:00</updated>
+  <id>http://crowding.github.io/</id>
+  <author>
+    <name><![CDATA[Peter Meilstrup]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Enabling Subpixel Rendering on Mac OS]]></title>
+    <link href="http://crowding.github.io/blog/2014/03/29/enabling-subpixel/"/>
+    <updated>2014-03-29T14:12:53-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/03/29/enabling-subpixel</id>
+    <content type="html"><![CDATA[<p>I have one of those generic Korean 27" LCD monitors. It&rsquo;s nice, but Mac OS doesn&rsquo;t recognize it enough to enable subpixel font rendering. Here&rsquo;s how to fix it on OS X 10.6.8, via <a href="http://hints.macworld.com/article.php?story=20090828224632809">MaxOSXHints</a>:</p>
+
+<p><code>
+defaults -currentHost write -globalDomain AppleFontSmoothing -int 2
+</code></p>
+
+<p>Especially with a nice font like Source Code Pro, it makes a perceptible difference in clarity.</p>
+
+<p>Related: <a href="http://www.rastertragedy.com/">A longer web page about font rendering than you probably want to read.</a></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Version Controlled Home Directory With Vcsh]]></title>
+    <link href="http://crowding.github.io/blog/2014/03/29/vc-home/"/>
+    <updated>2014-03-29T13:25:03-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/03/29/vc-home</id>
+    <content type="html"><![CDATA[<p>I&rsquo;ve been keeping all my .dotfiles in a Git repository. Since I&rsquo;m keeping <em>all</em> of them, it&rsquo;s become a big mess. I also had little success with maintaining diverging branches to work on different computers (e.g. Mac vs. Linux, Emacs23 versus Emacs24) while keeping the common. you-d think that exchanging merge operations between branches would work, but actually you need to be constantly rebasing, and Git doesn&rsquo;t have any way of keeping track of what was a rebase of what (which is half the problem with Git) and it&rsquo;s a mess.</p>
+
+<p>I still wonder if maybe darcs would be a better model for VCS home &mdash; it would certainly seem better to the always-rebase school of moving branches in sync.</p>
+
+<p>However, <a href="https://github.com/RichiH/vcsh">vcsh</a> seems to approach at least one aspect of the problem, whcih is to keep different pieces of your mess of config files under differetn headings. So let&rsquo;s see about starting to use that.</p>
+
+<p>Download: It&rsquo;s in Homebrew and Debian, so just brew or apt-get as appropriate.</p>
+
+<p><code>
+git clone https://github.com/RichiH/vcsh.git
+</code></p>
+
+<p>First question is does it support tracking things scattered around <code>/etc</code> and so on? It would be nice to have backups for &ldquo;software configurations&rdquo; set up on glibal servers too.</p>
+
+<p>To start with, I went to <a href="hosting_git_on_your_user_account">gitolite</a> and added some space for wild config repositories:</p>
+
+<p>```
+repo configs/.*</p>
+
+<pre><code>C     = peter
+RW+D  = peter
+</code></pre>
+
+<p>repo gobal_configs/.*</p>
+
+<pre><code>C     = peter
+RW+D  = peter
+</code></pre>
+
+<p>```</p>
+
+<p>The tutorial for <code>vcsh</code> is located at <code>/usr/doc/vcsh/README.md.gz</code>. For my home directory I started with the &ldquo;template&rdquo; approach, clonign the example MR config to my own server:</p>
+
+<p><code>
+vcsh clone git://github.com/RichiH/vcsh_mr_template.git mr
+vcsh enter mr
+git remote rm origin
+git remote add origin homeGit:configs/mr
+git fetch
+git push origin master
+git branch --set-upstream master origin/master
+exit
+</code></p>
+
+<p>I&rsquo;ll start by making a repo for my my SSH public/authorized keys files. I recently decided not to share private keys between computers and regenerated a new private key on each, so this is a good opportunity to keep the authorized keys straight.</p>
+
+<p>So, as far as I can tell, this is how you add a new config repo:</p>
+
+<p><code>
+vcsh init ssh
+vcsh ssh add .ssh/authorized_keys .ssh/config .ssh/*.pub
+vcsh ssh commit
+vcsh run ssh git remote add origin homeGit:configs/ssh
+vcsh ssh push origin master
+cd .config/mr/available.d/
+cp mr.vcsh ssh.vcsh
+emacs ssh.vcsh #change the URL
+cp ssh.vcsh ../config.d
+vcsh mr add ssh.vcsh ../config.d/ssh.vcsh
+vcsh mr commit
+vcsh mr push
+</code></p>
+
+<p>Wow, really that involved? Twelve damn commands, leaving off one of which does weird things? Color me dubious about this scheme. And there are eight billion untracked files every time making it impossible to see files you don&rsquo;t have under control but should &mdash; can all repos share a .gitignore or what?</p>
+
+<p>Why doesn&rsquo;t &ldquo;vcsh init ssh&rdquo; do like 90% of this?</p>
+
+<p>This is supposed to be easier than symlinking scripts?</p>
+
+<p>Anyhow, the capstone that pushed me from &ldquo;dubious&rdquo; to &ldquo;kill it with fire&rdquo; was this:</p>
+
+<p><code>
+$ vcsh mr commit -m "Added ssh to config dir"
+error: pathspec 'ssh' did not match any file(s) known to git.
+error: pathspec 'to' did not match any file(s) known to git.
+error: pathspec 'config' did not match any file(s) known to git.
+error: pathspec 'dir' did not match any file(s) known to git.
+</code></p>
+
+<p>COMMAND LINE ARGUMENTS.
+THEY CAN HAVE SPACES IN THEM.
+NO, REALLY, <em>THEY CAN.</em>
+JUST BECAUSE YOU WRITE YOUR STUPID THING IN SHELL IS NO EXCUSE FOR THIS SHIT.</p>
+
+<p>Really, tearing apart arguments that were quoted perfectly well is fucking unacceptable for any kind of UNIX utility written after the &lsquo;80s.</p>
+
+<p>Bye now.</p>
+
+<p><code>
+ssh homeGit D unlock configs/mr
+ssh homeGit D unlock configs/ssh
+ssh homeGit D rm configs/mr
+ssh homeGit D rm configs/ssh
+sudo apt-get remove mr vcsh
+rm -rf .config/mr .config/vcsh .mrconfig
+</code></p>
+]]></content>
+  </entry>
+  
+</feed>

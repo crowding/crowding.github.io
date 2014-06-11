@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Mac | Illusory stillness]]></title>
+  <link href="http://crowding.github.io/blog/categories/mac/atom.xml" rel="self"/>
+  <link href="http://crowding.github.io/"/>
+  <updated>2014-06-10T23:07:57-07:00</updated>
+  <id>http://crowding.github.io/</id>
+  <author>
+    <name><![CDATA[Peter Meilstrup]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Enabling Subpixel Rendering on Mac OS]]></title>
+    <link href="http://crowding.github.io/blog/2014/03/29/enabling-subpixel/"/>
+    <updated>2014-03-29T14:12:53-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/03/29/enabling-subpixel</id>
+    <content type="html"><![CDATA[<p>I have one of those generic Korean 27" LCD monitors. It&rsquo;s nice, but Mac OS doesn&rsquo;t recognize it enough to enable subpixel font rendering. Here&rsquo;s how to fix it on OS X 10.6.8, via <a href="http://hints.macworld.com/article.php?story=20090828224632809">MaxOSXHints</a>:</p>
+
+<p><code>
+defaults -currentHost write -globalDomain AppleFontSmoothing -int 2
+</code></p>
+
+<p>Especially with a nice font like Source Code Pro, it makes a perceptible difference in clarity.</p>
+
+<p>Related: <a href="http://www.rastertragedy.com/">A longer web page about font rendering than you probably want to read.</a></p>
+]]></content>
+  </entry>
+  
+</feed>

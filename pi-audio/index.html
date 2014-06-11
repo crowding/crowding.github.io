@@ -1,0 +1,236 @@
+<table>
+<tbody>
+<tr class="odd">
+<td align="left">layout: page</td>
+</tr>
+<tr class="even">
+<td align="left">title: &quot;pi-audio&quot;</td>
+</tr>
+<tr class="odd">
+<td align="left">date: 2014-03-24 21:29</td>
+</tr>
+<tr class="even">
+<td align="left">comments: true</td>
+</tr>
+<tr class="odd">
+<td align="left">sharing: true</td>
+</tr>
+<tr class="even">
+<td align="left">footer: true</td>
+</tr>
+</tbody>
+</table>
+<h1 id="zone-audio-system-using-raspberry-pi">Zone Audio system using Raspberry Pi</h1>
+<p>I want to be able to stream audio from any mobile device (laptop, iDevice, Android-, guest's phones) to any romo in the house. I also want to be able to take the podcast I'm listening to upstairs and &quot;move&quot; it downstairs, or to the other room as I move around.</p>
+<h2 id="hardware-setup">Hardware Setup</h2>
+<ul>
+<li>one Raspberry Pi</li>
+<li>one or two USB 2.0 hubs
+<ul>
+<li>I selected a <a href="http://www.amazon.com/gp/product/B00008VFAF/ref=oh_details_o00_s00_i01?ie=UTF8&amp;psc=1">D-Link 7-port hub</a>. This comes with a 3A 5V power supply, and the Pi can actually be powered off one of the high speed charging ports. This keeps the setup down to one wall-wart. (<em>NOTE</em> This turned out to be unreliable as the USB hub would sometimes cycle its power as the RPi connected to the hub leading to endless reboots. So instead I got some splitters/adapters to power both devices off a single powersupply.) Aside: I wonder why USB hubs themselves aren't powered by USB wall warts since that is what everything is standardizing on.</li>
+</ul></li>
+<li>several USB audio DACs (I started with a pair of relatively ancient Griffin iMics i'll be experimenting with, but got five Audio-Technica ATR2USB devices ultimately. Mostly because they were cheap. They make a horribly loud power-on pop.)</li>
+</ul>
+<h2 id="software-setup.">Software setup.</h2>
+<p>I started with a vanilla Raspbian install on the Pi.</p>
+<p>There are several methods for transmitting audio over a network:</p>
+<ul>
+<li>The <a href="https://github.com/abrasive/shairport"><code>shairport</code></a> package emulates an AirPlay audio endpoint, which can be driven from iOS devices.</li>
+<li>Audio servers like JACK and PulseAudio</li>
+<li>DLNA</li>
+<li>Bluetooth</li>
+</ul>
+<p>I want to support as many as possible, reaching any or multiple endpoints, and without contention (mixing if multiple devices want to stream to the same speakers.)</p>
+<h4 id="abandoned-first-idea-install-pulseaudio">Abandoned first idea: install PulseAudio:</h4>
+<p>Nothing worked. Playing with ALSA made Pulse hang and Pulse tried to send things back to ALSA and it was a 100% CPU util and zero. Struggled, mightily, until I uninstalled PulseAudio and magically ALSA started working. See <a href="pulseaudio.html">a page of frustrated notes</a></p>
+<h2 id="first-get-alsa-straightened.">First: get ALSA straightened.</h2>
+<p>(Note, <a href="http://insanecoding.blogspot.com/2009/06/state-of-sound-in-linux-not-so-sorry.html">this page</a>, interestingly, seems to reccommend a OSS v4. I might come back to that when I have a low latency application.</p>
+<p>List ALSA playback devices:</p>
+<pre><code>pi@raspberrypi:~/blog/source/pi-audio$ aplay --list-devices
+**** List of PLAYBACK Hardware Devices ****
+card 0: system_1 [iMic USB audio system], device 0: USB Audio [USB Audio]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: system [iMic USB audio system], device 0: USB Audio [USB Audio]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 2: ALSA [bcm2835 ALSA], device 0: bcm2835 ALSA [bcm2835 ALSA]
+  Subdevices: 8/8
+  Subdevice #0: subdevice #0
+  Subdevice #1: subdevice #1
+  Subdevice #2: subdevice #2
+  Subdevice #3: subdevice #3
+  Subdevice #4: subdevice #4
+  Subdevice #5: subdevice #5
+  Subdevice #6: subdevice #6
+  Subdevice #7: subdevice #7</code></pre>
+<p>Not sure what all the subdevices for the bcm2835 are. Analong, HDMO, in, out?</p>
+<p>It's also somewhat disturbing that the cards are numbered with the USB devices first Udev is supposed to stop that from happening. How can I refer to a USB device stably so that living room stays living room through restarts? Ideally refer by device serial number?</p>
+<h3 id="how-to-make-alsa-refer-to-usb-devices-stably.">How to make ALSA refer to USB devices stably.</h3>
+<p>USB devices, in general, will not get assigned to the same places between restarts, so I need some way to make sure that if I play to the bedroom I'll get the bedroom.</p>
+<p>The Alsa-project.org wiki had a <a href="http://www.alsa-project.org/main/index.php/Changing_card_IDs_with_udev">page showing how to assign device names based on the path to the particular port the device is plugged in to</a>.</p>
+<p>Unplugging and replugging for some reason does not show up on <code>udevadm monitor</code>. So I rebooted with the audio cards unplugged from USB, then ran <code>udevadm monitor</code> This got me:</p>
+<pre><code>KERNEL[101.908473] change   /devices/platform/bcm2708_usb/usb1/1-1/1-1.3/1-1.3.4/1-1.3.4:1.0/sound/card1 (sound)
+KERNEL[112.194239] change   /devices/platform/bcm2708_usb/usb1/1-1/1-1.3/1-1.3.3/1-1.3.3:1.0/sound/card2 (sound)</code></pre>
+<p><em>NOTE</em> this did not work for another brand of USB audio device, even booting with things unplugged. Anohter thing I did was extract the device paths from the output of <code>udevadmin info --export-db</code>.</p>
+<p>So I added these lines to <code>/etc/udev/rules.d/39-usb-alsa.rules</code>:</p>
+<pre><code>SUBSYSTEM!=&quot;sound&quot;, GOTO=&quot;my_usb_audio_end&quot;
+ACTION!=&quot;add&quot;, GOTO=&quot;my_usb_audio_end&quot;
+
+DEVPATH==&quot;/devices/platform/bcm2835_AUD0.0/sound/card?&quot;, ATTR{id}=&quot;builtin&quot;
+DEVPATH==&quot;/devices/platform/bcm2708_usb/usb1/1-1/1-1.3/1-1.3.4/1-1.3.4:1.0/sound/card?&quot;, ATTR{id}=&quot;living_room&quot;
+DEVPATH==&quot;/devices/platform/bcm2708_usb/usb1/1-1/1-1.3/1-1.3.3/1-1.3.3:1.0/sound/card?&quot;, ATTR{id}=&quot;office&quot;
+
+LABEL=&quot;my_usb_audio_end&quot;</code></pre>
+<p>Saving that and rebooting, I find that ALSA now has names for my audio cards:</p>
+<pre><code>pi@raspberrypi:~/blog/source/pi-audio$ aplay --list-devices
+**** List of PLAYBACK Hardware Devices ****
+card 0: living_room [iMic USB audio system], device 0: USB Audio [USB Audio]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0
+card 1: office [iMic USB audio system], device 0: USB Audio [USB Audio]
+  Subdevices: 1/1
+  Subdevice #0: subdevice #0</code></pre>
+<p>However, it did not manage to change the &quot;id&quot; on the builtin. No matter, as it is terrible and I won't be using it.</p>
+<p>And ALSA can play using those names;</p>
+<pre><code>aplay -D default:living_room /usr/share/scratch/Media/Sounds/Animal/HorseGallop.wav</code></pre>
+<h3 id="writing-an-asound.conf">Writing an <code>asound.conf</code></h3>
+<p>The native sample rate on these things is 48000 Hz, if I remember the spec sheet right, so let's make ALSA resample in software.</p>
+<p>I also want some virtual devices for &quot;everywhere,&quot; &quot;upstairs,&quot; etc.</p>
+<p>Here's the <code>etc/asound.conf</code> I wrote (note it gets more complicated down below with mixing:</p>
+<pre><code>pcm.raw_living_room {
+    type hw
+    card living_room
+    rate 48000
+}
+
+pcm.raw_office {
+    type hw
+    card office
+    rate 48000
+}
+
+pcm.living_room {
+    type plug
+    slave { pcm &quot;raw_living_room&quot; }
+}
+
+ctl.living_room {
+    type hw
+    card &quot;living_room&quot;
+}
+
+pcm.office {
+    type plug
+    slave { pcm &quot;raw_office&quot; }
+}
+
+ctl.office {
+    type hw
+    card &quot;office&quot;
+}
+
+pcm.!default {
+    type plug
+    slave { pcm &quot;raw_living_room&quot; }
+}
+
+ctl.!default {
+    type hw
+    card &quot;living_room&quot;
+}
+
+pcm.everywhere {
+    type plug;
+    slave.pcm {
+        type route;
+        slave.pcm {
+           type multi;
+           slaves.a.pcm raw_living_room;
+           slaves.a.channels 2;
+           slaves.b.pcm raw_office;
+           slaves.b.channels 2;
+           bindings.0.slave a;
+           bindings.0.channel 0;
+           bindings.1.slave a;
+           bindings.1.channel 1;
+           bindings.2.slave b;
+           bindings.2.channel 0;
+           bindings.3.slave b;
+           bindings.3.channel 1;
+        }
+        ttable.0.0 1;
+        ttable.1.1 1;
+        ttable.0.2 1;
+        ttable.1.3 1;
+    }
+}
+
+pcm.pulse { type pulse }
+ctl.pulse { type pulse }</code></pre>
+<p>I found I could <code>aplay -D everywhere</code> and get sound out of both speakers (with some popping).</p>
+<p>Note that you may often get warnings on the ALSA site about ganging audio cards together, that their clocks might drift. The nice thing about USB audio devices is that they (or at least some of them, like the original iMics) derive their 48000Hz clock off of the 1Khz frame clock on the USB bus. So two devices on the same bus will stay in relative synch indefinitely. As long as they are fed properly by the audio drivers...</p>
+<h2 id="upgrade-firmware">Upgrade firmware</h2>
+<p>I ran <code>rpi-update</code> since audio and USB concention have been worked on and this Pi is quite old. No change that I saw (yet).</p>
+<h2 id="next-step-dont-add-pulseaudio-back">Next step: Don't add PulseAudio back</h2>
+<p>Actually, no. The only thing that Pulseaudio ever did was prevent sound from being played (even though ALSA, already worked, what), and hog the CPU. So, make sure to <em>un</em>install pulseaudio. See <a href="pulse.html">a second page of frustrated notes</a>.</p>
+<h2 id="make-alsa-do-mixing">Make ALSA do mixing</h2>
+<p>After uninstalling PulseAudio, ALSA magically started working again.</p>
+<p>So I decided to set up software mixing and multi-clients in ALSA. See <a href="http://alsa.opensrc.org/AlsaSharing">this page</a>.</p>
+<p>Eventually my /etc/asound.conf looks like <a href="asound.conf">this</a>. Note the numeric paramters, whcih I copied from somewhere without really experimenting, but they seemed to take care of popping.</p>
+<p>And it allows mixing of multiple streams from here, there, everywhere:</p>
+<pre><code>cd /usr/share/scratch/Media/Sounds/Vocals
+mpg321 -o alsa -a everywhere Oooo-badada.mp3 &amp; mpg321 -o alsa -a office Sing-me-a-song.mp3</code></pre>
+<p>Now, I get some dropouts when playing three mp3 streams at once, but that seems to be mpg321's inefficiencies.</p>
+<h2 id="configure-shairport">Configure shairport</h2>
+<p>Clone the repo from github:</p>
+<pre><code>pi@raspberrypi:~$ git clone https://github.com/abrasive/shairport.git</code></pre>
+<p>Install build dependencies:</p>
+<pre><code>sudo apt-get install libssl-dev libavahi-client-dev libasound2-dev libao-dev libpulse-dev</code></pre>
+<p>Compile:</p>
+<pre><code>cd ~/.shairport &amp;&amp; ./configure &amp;&amp; make</code></pre>
+<p>Test:</p>
+<pre><code>./shairport -a &quot;Living room&quot; -p 5002 -- -d living_room &amp;
+./shairport -a &quot;Office&quot; -p 5003 -- -d office &amp;
+./shairport -a &quot;Everywhere&quot; -p 5004 -- -d everywhere &amp;</code></pre>
+<p>That, remarkably, worked. Multiple endpoints can even play simultaneously (even endpoints that share the same physical speakers). It doesn't allow multiple connections per endpoint, though its contention behavior is better than the airport (it boots off old connections instead of letting them hog)</p>
+<p>Then the thing is to make the <code>shairport</code>s run at startup as daemons. I mashed together some example init.d scripts found on the web and made <a href="service.sh">this</a> which I placed at <code>/etc/init.d/shairport</code>. Note the script makes the daemons run with realtime priority. Then I ran:</p>
+<pre><code>sudo update-rc.d shairport defaults</code></pre>
+<p>to enable the script at startup.</p>
+<p>Note: I think I want the daemon to run at realtime priority only when it is streaming, but not when waiting for connections? Can that be done?</p>
+<h2 id="popping-and-clicking-fix">Popping and clicking fix</h2>
+<p>Popping and clicking was worse with the Audio-Technica dongles than with the iMics. I found <a href="http://www.raspyfi.com/raspberry-pi-usb-audio-fix/">a page</a> about a branch of the Raspberry pi kernel that fixes the USB lossage.</p>
+<p>But this fix has already been merged and I've been using it! However, there are some tweaks. Putting</p>
+<pre><code>dwc_otg.fiq_split_enable=0</code></pre>
+<p>in <code>/boot/cmdline.txt</code> made crackling much worse! But adding it at the beginning of the command line had better luck -- crackle when starting a strem which settles down, a bit worse (occasional crackles and skips) when 'everywhere' -- but then the crackles get horrible after a half hour or so. Really, bright, destroy-your-tweeters electric cracks, as opposed to the popcorn glitches I get when the option is off. (Doesn't depend on whether I'm using multiple devices, either.</p>
+<p>Another thing to try is:</p>
+<pre><code>dwc_otg.speed=1</code></pre>
+<p>which eliminated crackles, or at least slowed them down to once or twice in a half hour.. This option forces USB1.1 speeds. The disadvantage is that more than two endpoints will refuse to play because of insufficient USB bandwidth. That's what I'm sticking for for the moment.</p>
+<p>Other options:</p>
+<p><code>dwc_otg.microframe_schedule=0</code> made USB fail to start up at all because of failures to allocate enough periodic transfers.</p>
+<p>See <a href="http://www.raspberrypi.org/forums/viewtopic.php?f=28&amp;t=39175&amp;start=150">this thread</a> and <a href="http://www.raspyfi.com/forum/giveaways-news-thoughts-from-raspyfi/raspyfi-1-0-in-beta-test/">this thread</a> and <a href="http://volumio.org/forum/fixes-for-common-usb-dac-problems-with-rpi-t328-10.html">this thread</a> for some hints and other things to try.</p>
+<p>Nothing satisfactory yet so the next thing is COMPILE A KERNEL, from the last link.</p>
+<h3 id="compile-a-kernel">Compile a kernel</h3>
+<p>Linux always comes to this...</p>
+<p>I cross-compiled the kernel mentioned in <a href="http://volumio.org/forum/fixes-for-common-usb-dac-problems-with-rpi-t328-10.html">one of the previous threads</a>, and described that process on a separate page.</p>
+<p>Short story, it didn't work. Crackles/pops just as bad, and forcing USB 1.1 speeds made the Ethernet drop packets.</p>
+<h3 id="try-swapping-out-the-dacs">Try Swapping out the DACs</h3>
+<p>Argh, ALWAYS try the simple things first. I swapped back the two Griffin iMics for the C-Media based other devices Mics and that almost eliminated glitches with <code>fiq_split_enable=1</code>. This is with the original kernel too (no dropping Ether packets when loaded.)</p>
+<p>Now when I try to play simultaneously through two iMics and an ATR2USB, the ATR drifts out of sync while the iMics stay in sync.... THAT TELLS ME that they might be differing in terms of whether they operate in sync/async/adaptive mode (and this might explain pops and crackle.) How to tell which endpoints are in use. or configure the particular endpoints to use?</p>
+<h2 id="dlna-service">DLNA service</h2>
+<p>DLNA is the competing protocol to AirPlay. Actually not really competing, in that they don't do much of the same tasks at all, (AirPlay decompresses on the client and streams audio to the server; DLNA gets a media player, media library server, and remote control to work together.) But ler's add a DLNA service as well.</p>
+<p>A recommended DLNA audio renderer is <a href="http://github.com/hzeller/gmrender-resurrect">gmrender-resurrect</a></p>
+<p>It downloads and builds well enough:</p>
+<pre><code>git clone https://github.com/hzeller/gmrender-resurrect.git
+sudo apt-get install libupnp-dev gstreamer0.10-alsa gstreamer0.10-plugins-base libgstreamer-plugins-base0.10 libgstreamer-plugins-base0.10-dev libgstreamer0.10-dev
+./autoconf
+./configure
+make</code></pre>
+<p>Let's try and find a DLNA player to test it out.</p>
+<p>Then set it up with an init script...</p>
+<h2 id="todo">TODO</h2>
+<ul>
+<li>Hack shairport to allow multiple connections</li>
+<li>Bluetooth a2dp receiver</li>
+<li>Some kind of network audio suited for arbitrary transmission from computers. (netJACK or Pulse?)</li>
+</ul>

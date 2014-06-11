@@ -1,0 +1,350 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>IBM Serial Knob Boxes - Illusory stillness</title>
+  <meta name="author" content="Peter Meilstrup">
+
+  
+  <meta name="description" content="IBM Serial Knob Boxes 2014-03-24 Over a decade ago I picked up some interesting-lookign input devices at a local surplus shop. The IBM Lighted &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://crowding.github.io/knob-boxes">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Illusory stillness" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Illusory stillness</a></h1>
+  
+    <h2>mumble mumble techblog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:crowding.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article role="article">
+  
+  <header>
+    <h1 class="entry-title">IBM Serial Knob Boxes</h1>
+    <p class="meta">
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-24T21:35:00-07:00" pubdate data-updated="true">2014-03-24</time></p>
+  </header>
+  
+  <p>Over a decade ago I picked up some interesting-lookign input devices at a local <a href="http://candhsurplus.com/history.htm">surplus shop</a>.</p>
+
+<p>The IBM Lighted Programmable Function Keyboard has 32 unlabeled buttons, each with its own green indicator LED like a &lsquo;80s-era Monome.</p>
+
+<p>The 6094 010 Dials peripheral was even more interesting, with eight continuously-turning knobs with a clever design that could be spin quickly or fine tuned.</p>
+
+<p>These were originally made for RS/600 series CAD workstations.</p>
+
+<p>After realizing how cool these were, I collected all the ones they had. for about $3 each. A look at eBay finds asking prices about $100-200 apiece.</p>
+
+<p>More buttons and knobs than I could even think what to do with!</p>
+
+<p>Just needed to reverse the serial protocol&hellip; and find enough serial ports. Never managed to happen what with needing to graduate from school and all.</p>
+
+<h1>Goals</h1>
+
+<p>Get all devices running at once. Write a server program thattaks to them and them exposes to the network as OSC controls. Use them to blink lights and twiddle noises.</p>
+
+<h1>Equipment</h1>
+
+<ul>
+<li>The LPFKs and knob boxes. Six of one and seven of the other.</li>
+<li>Four InsideOut Networks EdgePort/4 USB to serial adapters (each having four ports)</li>
+<li>one Raspberry Pi</li>
+<li>one <a href="http://www.amazon.com/gp/product/B00008VFAF/ref=oh_details_o00_s00_i01?ie=UTF8&amp;psc=1">USB hub</a> with enough juice in the charge ports to power the Raspberry Pi autophagically.</li>
+</ul>
+
+
+<h1>Cabling</h1>
+
+<p>The peripherals have a single mini-DIN-8 connector. Here&rsquo;s what IBM documentation has to say about this mini-DIN 8 connector:</p>
+
+<p><img src="knob-boxes/pinout.svg" alt="pinout of Mini-DIN-8 connector" /></p>
+
+<p>(from <a href="ibm">this document</a> on page 156)</p>
+
+<p>However, this document seems to treat the LPFK and knobs as having the same interface as the tablets, and a pinout listed later in the same dicument disagreed about which pins were to power the tablet.</p>
+
+<p>So I took apart the device and looked at the PC board. I found that the power and power return were routed to pins 3 and both grounds connected to pins 1 and 2. So the first diagram is correct. And the &ldquo;selective reset&rdquo; appears to be unused &mdash; only <code>Vcc</code>, the two grounds, <code>Tx</code> and <code>Rx</code> were connected to anything for either the LPFK or the knobs.</p>
+
+<p>Here&rsquo;s I wired the cables for these: a converter from DE-9 to this port:</p>
+
+<p><img src="knob-boxes/cable.svg" alt="cabling diagram" /></p>
+
+<p>Note that the cable carries both power and signal. I got a bix boxy kind of DE9 connector so I injected power by this somewhat horrifying method:</p>
+
+<p><img src="knob-boxes/dawg1.jpg" alt="I heard I like connectors" /> <img src="knob-boxes/dawg2.jpg" alt="so I put a connector in my connector so I can power while I signal" /></p>
+
+<p>Yes, it&rsquo;s not really a great to use a TS connector to provide power. But it is literally the smallest jack I could find.</p>
+
+<p>Power came from a a 5V USB power supply the form of phone chargers via a series of horrible splitter cables.</p>
+
+<p>Note that the diameter of the plug hole on the devices is a little smaller than the common mini-DIN shroud, so these are held together with hod glue and heat shrink on the DIN end end.</p>
+
+<p>Then I realized that I would be in for massive headaches if I didn&rsquo;t have a test rig for the wires, so I got some mating connectors:</p>
+
+<p>Despite making the careful wiring diagram above, I had about a 40% rate of something being wrong with a cable on the first try. A short, a bad solder joint, a swapped pair of colors, and a fun one was getting the DIN connector rotated by one step.</p>
+
+<p>Eventually, though I had as many cables as I had devices.</p>
+
+<p>(serial.jpg)[Wow
+Such connection
+Very RS-232
+So serial
+Wow]</p>
+
+<h1>Drivers</h1>
+
+<p>The Linux driver for the EdgePort automatically detected on Raspbian, which came with the requisite kernel module, which was a blessing. No OS X drivers for the EdgePorts. However, Debian sees fit to not distribute the firmware files needed by the Edgeport, because they are the masters of GPL rules lawyering<sup id="fnref:1"><a href="#fn:1" rel="footnote">1</a></sup>. Strangely, the firmware is not even included in the <code>non-free/firmware-linux-non-free</code> package. As a result you see startup messages like:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[    9.558213] usb 1-1.2.3: Failed to load image "edgeport/down.fw" err -2
+</span><span class='line'>[    9.631596] usb 1-1.2.3: Failed to load image "edgeport/boot.fw" err -2</span></code></pre></td></tr></table></div></figure>
+
+
+<p>To fix this, you need to get the firmware files. I grabbed them from Ubuntu (note that Ubuntu distro itself doesn&rsquo;t support the Pi):</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'># do an `aptitude search firmware | grep '^i'` and remove all of it
+</span><span class='line'># since it will conflict
+</span><span class='line'>sudo aptitude remove firmware-linux firmware-linux- firmware-linux-nonfree &lt;other-things&gt;
+</span><span class='line'>wget http://mirror.pnl.gov/ubuntu//pool/main/l/linux-firmware/linux-firmware_1.127_all.deb
+</span><span class='line'>sudo dpkg -i linux-firmware_1.127_all.deb</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Whee, looks like that worked. The fast blinking red lights in the Edgeports became slow blinking green lights.</p>
+
+<h1>Talking to the thing</h1>
+
+<p>Apparently the LPFK protocol is supposed to be simple. Let&rsquo;s find a terminal emulator that works in hexdump mode. <code>minicom</code> will output in hex, but <code>cutecom</code> will do both input and output in hex. Okay.</p>
+
+<p>Now, the docs from IBM say 9600/8N1, but monkey typing doesn&rsquo;t produce any response, and monkey button pushing doesn&rsquo;t produce any activity.</p>
+
+<p>So</p>
+
+<p>The knob boxes are going to be more of a challenge, if I recall.</p>
+<div class="footnotes">
+<hr/>
+<ol>
+<li id="fn:1">
+<p>(apparently Digi used some GPL code in producing the firmware, so in Debian&rsquo;s view Digi is not allowed to distribute the firmware without making their source available, therefore Debian won&rsquo;t distribute the file that Digi has contributed to the Linux kernel.)<a href="#fnref:1" rev="footnote">&#8617;</a></p></li>
+</ol>
+</div>
+
+
+  
+    <footer>
+      <p class="meta">
+        
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-24T21:35:00-07:00" pubdate data-updated="true">2014-03-24</time>
+        
+      </p>
+      
+        <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://crowding.github.io/knob-boxes/index.html" data-via="perisaccadic" data-counturl="http://crowding.github.io/knob-boxes/index.html" >Tweet</a>
+  
+  
+  
+</div>
+
+      
+    </footer>
+  
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/05/21/itunes-library-manipulation-with-python/">iTunes Library Manipulation With Python</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/19/whitespace-mode/">Whitespace-mode</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/15/time-shifting-an-internet-stream/">Time Shifting an Internet Stream With VLC</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/28/un-pause-programs-in-os-x/">Un-pause Programs in OS X</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/crowding">@crowding</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'crowding',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>My Pinboard</h1>
+  <ul id="pinboard_linkroll">Fetching linkroll...</ul>
+  <p><a href="http://pinboard.in/u:crowding">My Pinboard Bookmarks &raquo;</a></p>
+</section>
+<script type="text/javascript">
+  var linkroll = 'pinboard_linkroll'; //id target for pinboard list
+  var pinboard_user = "crowding"; //id target for pinboard list
+  var pinboard_count = 3; //id target for pinboard list
+  (function(){
+    var pinboardInit = document.createElement('script');
+    pinboardInit.type = 'text/javascript';
+    pinboardInit.async = true;
+    pinboardInit.src = '/javascripts/pinboard.js';
+    document.getElementsByTagName('head')[0].appendChild(pinboardInit);
+  })();
+</script>
+
+
+<section class="twitter">
+  <a class="twitter-timeline" href="https://twitter.com/perisaccadic" data-widget-id="448287882478764032">Tweets by @perisaccadic</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Peter Meilstrup -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

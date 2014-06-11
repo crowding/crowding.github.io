@@ -1,0 +1,322 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Setting Up Online Help in Homebrew Erlang/Emacs/Distel - Illusory stillness</title>
+  <meta name="author" content="Peter Meilstrup">
+
+  
+  <meta name="description" content="Now IN THEORY, Distel-mode is supposed to show me the online help when I point by cursor at a function name and press C-c C-d h. What I actually get &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://crowding.github.io/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Illusory stillness" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Illusory stillness</a></h1>
+  
+    <h2>mumble mumble techblog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:crowding.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-05T18:14:41-07:00" pubdate data-updated="true">2014-05-05</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Now IN THEORY, Distel-mode is supposed to show me the online help when I point by cursor at a function name and press <code>C-c C-d h</code>. What I actually get is:</p>
+
+<p>I am unable to Google up a description of how to let Distel know where the HTML documentaiton is (as I installed Erlang from Homebrew, I find the HTML docs under <code>/usr/local/Cellar/erlang/17.0/share/doc/erlang/doc/</code>.)</p>
+
+<p>Now looking in what <code>distel.el</code> actually does with a <code>C-c C-d h</code> I find that Distel contains a module <code>otp_doc</code> which is a singleton <code>gen_server</code>&hellip; so I go to an erlang shell on that node and type</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)3&gt; whereis(otp_doc).
+</span><span class='line'>&lt;0.44.0&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now I also saw that the <code>otp_doc</code> module had a property list as the init of its <code>gen_server</code> state. The state contained a <code>root_dir</code> variable. The root_dir variable is initialized to a default of <code>code:root_dir()</code>, which is currently set to:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)4&gt; code:root_dir().
+</span><span class='line'>"/usr/local/Cellar/erlang/17.0/lib/erlang"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Aping Distel and calling otp_doc does:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)9&gt; otp_doc:distel(link, "orddict", "find", 2).
+</span><span class='line'>no_html</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Meanwhile, another Distel function <code>C-c C-d A</code> which is bound to <code>erl-show-arglist</code>  works fine when pressed ad <code>orddict:find|</code>. And <code>C-c C-d d</code> also comes up with useful information &mdash; but this information doesn&rsquo;t look like /documentation/.</p>
+
+<p>From Emacs. <code>C-c C-d h</code> does <code>(erl-do-find-doc 'link 'point 'code</code>root_dir 0)`,</p>
+
+<p>And it looks like <code>init()</code> calls <code>index_html()</code> the <code>no_html</code> is coming from <code>init()</code> I guess. Here&rsquo;s how:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>html_index(file,Dir) -&gt;
+</span><span class='line'>  FN = filename:join([Dir,"doc","man_index.html"]),
+</span><span class='line'>  fold_file(curry(fun lines/3,Dir),[],FN).</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So do I need to set root_dir to <code>/usr/local/Cellar/erlang/17.0/share/erlang</code>? Or alter how otp_doc is being initialized? Looks like it is accessed through <code>otp_doc:start</code>.</p>
+
+<p>So how to provide the start state from Emacs?</p>
+
+<p>I can&rsquo;t find where this value is configured, anywhere.</p>
+
+<p>So I just crapped out and made a symlink:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>dekkera:lib peter$ cd /usr/local/Cellar/erlang/17.0/lib/erlang
+</span><span class='line'>dekkera:lib peter$ ln -s ../../share/doc/erlang/doc doc</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This got rid of no_html error but I still don&rsquo;t find any HTML documentation! What the hell.  I&rsquo;ll have to see why it&rsquo;s not reading the HTML file and populating the ETS database, or something.</p>
+
+<p>This is more debugging of Erlang than I can handle when all I&rsquo;m trying to do is write Erlang code. Argh.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Peter Meilstrup</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-05T18:14:41-07:00" pubdate data-updated="true">2014-05-05</time>
+      
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://crowding.github.io/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/" data-via="perisaccadic" data-counturl="http://crowding.github.io/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/04/28/un-pause-programs-in-os-x/" title="Previous Post: Un-pause programs in OS X">&laquo; Un-pause programs in OS X</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/05/15/time-shifting-an-internet-stream/" title="Next Post: Time shifting an internet stream with VLC">Time shifting an internet stream with VLC &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/05/21/itunes-library-manipulation-with-python/">iTunes Library Manipulation With Python</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/19/whitespace-mode/">Whitespace-mode</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/15/time-shifting-an-internet-stream/">Time Shifting an Internet Stream With VLC</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/28/un-pause-programs-in-os-x/">Un-pause Programs in OS X</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/crowding">@crowding</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'crowding',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>My Pinboard</h1>
+  <ul id="pinboard_linkroll">Fetching linkroll...</ul>
+  <p><a href="http://pinboard.in/u:crowding">My Pinboard Bookmarks &raquo;</a></p>
+</section>
+<script type="text/javascript">
+  var linkroll = 'pinboard_linkroll'; //id target for pinboard list
+  var pinboard_user = "crowding"; //id target for pinboard list
+  var pinboard_count = 3; //id target for pinboard list
+  (function(){
+    var pinboardInit = document.createElement('script');
+    pinboardInit.type = 'text/javascript';
+    pinboardInit.async = true;
+    pinboardInit.src = '/javascripts/pinboard.js';
+    document.getElementsByTagName('head')[0].appendChild(pinboardInit);
+  })();
+</script>
+
+
+<section class="twitter">
+  <a class="twitter-timeline" href="https://twitter.com/perisaccadic" data-widget-id="448287882478764032">Tweets by @perisaccadic</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Peter Meilstrup -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Technote | Illusory stillness]]></title>
+  <link href="http://crowding.github.io/blog/categories/technote/atom.xml" rel="self"/>
+  <link href="http://crowding.github.io/"/>
+  <updated>2014-06-10T23:07:57-07:00</updated>
+  <id>http://crowding.github.io/</id>
+  <author>
+    <name><![CDATA[Peter Meilstrup]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[iTunes Library Manipulation With Python]]></title>
+    <link href="http://crowding.github.io/blog/2014/05/21/itunes-library-manipulation-with-python/"/>
+    <updated>2014-05-21T12:13:36-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/05/21/itunes-library-manipulation-with-python</id>
+    <content type="html"><![CDATA[<p>Current project: filter out duplicates and CDs with missing tracks from library.</p>
+
+<p>Using: Python/appscript.</p>
+
+<p>Er, first upgrading my Python/IPython?</p>
+
+<p>I followed <a href="http://stupidpythonideas.blogspot.com/2013/02/installing-scipy-etc-for-python-3-on-mac.html">these instructions</a>.</p>
+
+<p>Except that instead of <code>easy_install3.4 readline</code> do <code>pip3 install gnureadline</code>.</p>
+
+<p>And install an old gfortran? I get zombie errors referring to a nonexistent version of homebrew&rsquo;s gfortran.</p>
+
+<p><code>
+brew install python3
+pip install --upgrade pip
+pip install ipython[notebook]
+</code></p>
+
+<p>Dammit I just install a binary numpy.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Whitespace-mode]]></title>
+    <link href="http://crowding.github.io/blog/2014/05/19/whitespace-mode/"/>
+    <updated>2014-05-19T21:00:35-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/05/19/whitespace-mode</id>
+    <content type="html"><![CDATA[<p>Why does whitespace-mode fuck up longlines mode when it&rsquo;s supposed to be disabled?</p>
+
+<p>I&rsquo;d like to edit markdown files with longlines-mode (word wrapping). Clearly when longlines-mode is enabled, I don&rsquo;t want to highlight 80+ char lines, as I_do when editing code. However, I still want the other whitespace-mode features (highlight trailing spaces, tabs, etc)</p>
+
+<p>I have, in my markdown-mode modehook:</p>
+
+<p>```
+  (when whitespace-mode</p>
+
+<pre><code>(whitespace-mode 'disable)
+(setq-local whitespace-style (remove 'lines-tail whitespace-style)))
+</code></pre>
+
+<p>```</p>
+
+<p>It doesn&rsquo;t work. Lines longer than 80char still get highlighted.</p>
+
+<p>But indeed &lsquo;lines-tail does not appear in whitespace-style. However, too late: this came after whitespace-mode had initialized, and so it&rsquo;s already set up.</p>
+
+<p>Moving to a lighlighted char and doing <code>(face-at-point)</code> reveals <code>whitespace-line</code>.</p>
+
+<p>Disabling font-lock-mode disables all highlighting.</p>
+
+<p><code>font-lock-fontify-buffer</code> doesn&rsquo;t do it.</p>
+
+<p><code>font-lock-keywords-alist</code> does not contain anything pertaining to whitespace-mode.</p>
+
+<p>Hmmm. maybe I can locally redefine the face.</p>
+
+<p><code>font-lock-keywords</code> is not buffer local. It contains this:</p>
+
+<p><code>
+("^\\([^    \n]\\{4\\}\\|[^ \n]\\{0,3\\}    \\)\\{20\\}\\(.+\\)$"
+(2 whitespace-line t))
+</code></p>
+
+<p>If I remove <code>lines-tail</code> f rom <code>whitespace-style</code> before loading the buffer&hellip; the offending highlighting does not take place.</p>
+
+<p>So I need to to the remove before enabling whitespace mode? and make it buffer-local?</p>
+
+<p>So, I made sure that the modification to whitespace-style occurred before whitespace-mode was enabled. That did the trick, I think.</p>
+
+<p>So, here:</p>
+
+<p>```
+(add-hook &lsquo;markdown-mode-hook 'pbm-markdown-fonts)</p>
+
+<p>(defun pbm-markdown-fonts ()
+  ;Use variable pitch fonts, and wrap long lines.
+  (variable-pitch-mode t)
+  (if whitespace-mode</p>
+
+<pre><code>  (error "markdown mode needs configured before whitespace mode is enabled"))
+</code></pre>
+
+<p>  (setq-local whitespace-style (remove &lsquo;lines-tail whitespace-style))
+  (visual-line-mode)
+  (set-visual-wrap-column 75)
+  (font-lock-fontify-buffer))
+```</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Time Shifting an Internet Stream With VLC]]></title>
+    <link href="http://crowding.github.io/blog/2014/05/15/time-shifting-an-internet-stream/"/>
+    <updated>2014-05-15T17:31:07-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/05/15/time-shifting-an-internet-stream</id>
+    <content type="html"><![CDATA[<p>I want to listen to this <a href="http://www.brap.fm/2014/05/14/the-shiso-room-yppah-guest-mix-16-05-14/">upcoming show</a> but don&rsquo;t know if it&rsquo;ll be downloadable later.</p>
+
+<p>I worked out a VLC command line:</p>
+
+<p>```
+/Applications/VLC.app/Contents/MacOS/VLC \
+<a href="http://delicious.wavestreamer.com:4626/listen.pls?sid=1">http://delicious.wavestreamer.com:4626/listen.pls?sid=1</a> \</p>
+
+<pre><code>vlc://quit \
+--network-caching=10000 \
+--sout /Users/peter/2014-05-16_yppah_shisho_room_mix.ogg \
+--run-time=7400 \
+--intf rc
+</code></pre>
+
+<p>```</p>
+
+<p>I put the command in an executable <code>.sh</code> file and scheduled it to run using LaunchControl.</p>
+
+<h3>huh?</h3>
+
+<p>Note that I mistakenly tried to actually read the documentation and used
+<code>
+--sout "#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg}"
+</code></p>
+
+<p>I don&rsquo;t know what&rsquo;s srong or missing about this, but VLC decided to treat it as a filename instead of the syntax in the <a href="http://www.videolan.org/doc/streaming-howto/en/ch03.html">docs</a>:</p>
+
+<p><code>
+[0x109c21840] filesystem access error: cannot open file /Users/peter/blog/#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg} (No such file or directory)
+</code></p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Un-pause Programs in OS X]]></title>
+    <link href="http://crowding.github.io/blog/2014/04/28/un-pause-programs-in-os-x/"/>
+    <updated>2014-04-28T12:43:01-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/04/28/un-pause-programs-in-os-x</id>
+    <content type="html"><![CDATA[<p>I&rsquo;m not sure why there isn&rsquo;t a builtin way to do this. When a process eats all memory on OS X, it starts &ldquo;pausing&rdquo; applications. Upon killing the offending app, one wants to un-pause all the apps. But if you close the dialog, you can&rsquo;t resume!</p>
+
+<p>I can &ldquo;resume&rdquo; like this:</p>
+
+<p><code>
+pgrep Chrome | xargs kill -CONT
+</code></p>
+
+<p>which appears to make the apps usable again but the processes still show up as &ldquo;paused&rdquo; in the force quit dialog. Also, I think the unpausing should respect the process tree (not process names.)</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Actually Create a Bootable Linux USB Key for Mac]]></title>
+    <link href="http://crowding.github.io/blog/2014/04/26/actually-create-a-bootable-linux-usb-key-for-mac/"/>
+    <updated>2014-04-26T12:32:28-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/04/26/actually-create-a-bootable-linux-usb-key-for-mac</id>
+    <content type="html"><![CDATA[<p>I wanted to install Linux on a partition on an older (2008) Macbook Pro. It has no working CD drive. In fact having no CD drive is an accelerating trend these days.</p>
+
+<p>Now the Ubuntu site has <a href="http://www.ubuntu.com/download/desktop/create-a-usb-stick-on-mac-osx">instructions</a> for making a bootable USB stick. These instructions don&rsquo;t work on my machine. Nonetheless [contrary to some reports], it is completely possible to boot EFI machines off a USB stick. For example, just imaging the OS X installer DVD to a USB key using Disk Utility results in a bootable key. So something is not right with the Ubuntu image or instructions.</p>
+
+<p><a href="http://sevenbits.github.io/Mac-Linux-USB-Loader/">this did not work</a>
+<a href="http://penguintosh.com/about/">this did not even run</a>
+<a href="http://tillmail.de/wordpress/436">this did not work at first either</a> (even the special boot loader)
+installing <a href="">rEFIt</a> gave no boot menu.</p>
+
+<p>So here are directions that actually work.</p>
+
+<p>Install rEFIt, but then I ran the <code>enable_always.sh</code> command, and I finally saw a boot menu on startup, and it detected the EFI file on the USB stick.</p>
+
+<p>However, the <code>bootX64.efi</code> file showed a &ldquo;not compatible&rdquo; error when I tried to boot it. Using the 32-bit bootIA32.efi worked, and got me into a GRUB prompt.</p>
+
+<p>From the GRUB prempt, I typed,</p>
+
+<p>```
+ls
+ls (hd0,msdos1)
+ls (hd0,msdos1)/efi/boot
+ls (hd0,msdos1)/efi/boot/<name of my .iso></p>
+
+<p>```</p>
+
+<p>Er, no, it looks like I can&rsquo;t actually make this boot an .iso image from the command line. (and the other &ldquo;Linux USB Creator&rdquo; apps installed boot.efi files that gave &ldquo;unsupported&rdquo; errors. So the thing to do is to extract the contents of the .iso and see if GRUB works that way.</p>
+
+<p>Is it possible to create a bootable Linux key without rEFIt on the main drive? Maybe by putting rEFIt in the key. Not sure though.</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -1,0 +1,130 @@
+<table>
+<tbody>
+<tr class="odd">
+<td align="left">layout: page</td>
+</tr>
+<tr class="even">
+<td align="left">title: &quot;Hosting Git repositories from your user account using Gitolite&quot;</td>
+</tr>
+<tr class="odd">
+<td align="left">date: 2014-03-25 18:44</td>
+</tr>
+<tr class="even">
+<td align="left">comments: true</td>
+</tr>
+<tr class="odd">
+<td align="left">sharing: true</td>
+</tr>
+<tr class="even">
+<td align="left">footer: true</td>
+</tr>
+</tbody>
+</table>
+<p>How many times have you been in this situation: You recognize the need to use version control in your organization, or at least on your projects. Your organization does not. Your sysadmins are unresponsive to requests to support new things regardless the lack of any kind of VCS. Nonetheless, you refuse to not use VC on your projects.</p>
+<p>Have you never been in that situation? Weird. You're lucky.</p>
+<p>Gitolite is a utility for serving up repositories and controlling which users are able to read, write, force-update, delete, or create repositories. Useful when coordinating a project between different people or from different machines.</p>
+<p>The normal install instructions for Gitolite require a special user account, and as we've established, your organization might be unreceptive to doing things. Here I'll show you how to (somewhat sanely) host Gitolite in your own user account without bothering admins.</p>
+<h2 id="install-gitolite">Install gitolite</h2>
+<p>You can leave the executable in a directory in your home directory.</p>
+<pre><code>git clone git://github.com/sitaramc/gitolite ~/gitolite</code></pre>
+<p>We'll be following &quot;option 1&quot; with reference to the <a href="http://gitolite.com/gitolite/install.html#the-actual-install">Gitolite docs</a>.</p>
+<pre><code>cd gitolite
+./install</code></pre>
+<h2 id="ssh-keys">SSH keys</h2>
+<p>Gitolite authenticates using SSH.</p>
+<p>To keep Gitolite usage segregated from your normal account usage, create a new keypair for Gitolite operations.</p>
+<pre><code>cd ~/.ssh
+dekkera:.ssh peter$ ssh-keygen -t rsa -f git_id_rsa
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Your identification has been saved in git_id_rsa.
+Your public key has been saved in git_id_rsa.pub.</code></pre>
+<p>Store a copy of the <code>git_id_rsa.pub</code> in the gitolite folder, as 'your_name.pub', and tell Gitolite to set up using that key. Reference Gitolite docs: <a href="http://gitolite.com/gitolite/setup.html">setup</a> and note we are using the &quot;host alias&quot; option.</p>
+<pre><code>cp git_id_rsa.pub ~/gitolite/your_name.pub
+cd ~/gitolite
+gitolite -setup -pk your_name.pub</code></pre>
+<p>It's worth stating what &quot;setup&quot; did.</p>
+<p>First, it populated &quot;~/repositories&quot; with the default admin respository and the testing repository, and put you authorized key in the admin repository.</p>
+<p>Then it checked out the admin repository to <code>~/.gitolite</code></p>
+<p>Finally it added some lines to your <code>.ssh/authorized_keys</code> file, like this:</p>
+<pre><code># gitolite start
+command=&quot;/Users/peter/gitolite/src/gitolite-shell your_name&quot;,no-port-forwarding,no-X11-forwarding,no-agent-forwarding,no-pty ssh-rsa AAAAB3Nza&lt;rest of key&gt;== your_name@your_host
+# gitolite end</code></pre>
+<p>These lines mean that an SSH connnection made using this public key will connect to the Gitolite shell. (When you add other users, this means you are giving permission for them to run Gitolite under your UID. This is why the usual practice is to have a separate UID for Gitolite, in case Gitolite has an exploit.)</p>
+<p>Test it out now:</p>
+<pre><code>your_host:gitolite your_name$ ssh -x -i ~/.ssh/git_id_rsa your_name@your_host info
+hello yourname, this is your_name@your_host running gitolite3 v3.04-13-gcc9727c on git 1.9.1
+
+ R W    gitolite-admin
+ R W    testing</code></pre>
+<p>Important things to note: gitolite is running under your uid (are you OK with that?), and there are two repos to start with that you can read and write to.</p>
+<p>For convenience, you can also create a host alias, by adding these lines to <code>.ssh/config</code>:</p>
+<pre><code>Host home
+User your_name
+Hostname your_host
+IdentityFile ~/.ssh/git_id_rsa</code></pre>
+<p>This means you can clone things from <code>home/repo</code> rather than <code>your_name@your_host/repo</code> (and if your gitolite host moves you can track it by updating your SSH config instead of updating all the remotes in your checked out repositories).</p>
+<h3 id="tell-git-to-use-its-own-key">Tell Git to use its own key</h3>
+<p>To facilitate interaction with Gitolite from your own account, make Git use this key. (Other users can use their keys ordinarily.) Make a script <code>gitssh</code> <code>cat &gt; ~/bin/gitssh #!/bin/sh exec ssh -x -i ~/.ssh/git_id_rsa $@</code></p>
+<p>Make it executable and this line to your <code>.bashrc</code>:</p>
+<pre><code>export GIT_SSH=$HOME/bin/gitssh</code></pre>
+<h2 id="adding-new-users-and-repositories">Adding new users and repositories</h2>
+<p>Administrate gitolite by cloning the admin respotitory.</p>
+<pre><code>dekkera:gitolite peter$ git clone your_name@your_host:gitolite-admin
+#can also &quot;git clone home:gitolite-admin&quot; with a host alias</code></pre>
+<p>(If this doesn't work, make sure you configured <code>gitssh</code> and check the environment variable <code>GIT_SSH</code> as discussed above.) Note that if you set up a host alias you can clone from <code>home:gitolite-admin</code></p>
+<p>To add a user, go into <code>keydir</code> and add their SSH public key as <code>their_name.pub</code>.</p>
+<p>To add repositories and control access permissions, edit <code>conf/gitolite.conf</code>. and either add new lines for a new reporter.</p>
+<p>See the <a href="http://gitolite.com/gitolite/admin.html#conf">docs</a>. Go ahead and add these lines:</p>
+<pre><code>repo CREATOR/..*
+    C = @all
+    RW+D = CREATOR
+    R = @all</code></pre>
+<p>This allows users to add and delete their own repositories stored under their own subdirectory.</p>
+<p>Here, &quot;<code>R</code>&quot; allows reading, &quot;<code>W</code>&quot; allows writing, and &quot;<code>+</code>&quot; allows forced updating. &quot;<code>C</code>&quot; allows creation and &quot;<code>D</code>&quot; deletion of repositories.</p>
+<p>Commit your changes and do a <code>git push</code> and gitolite will receive the new setting.</p>
+<pre><code>your-host:gitolite-admin your_name$ git add -A
+your-host:gitolite-admin your_name$ git push origin master
+Everything up-to-date
+your-host:gitolite-admin your_name$ git commit -m &#39;adding self-created repo rule&#39;
+[master c53a070] adding self-created repo rule
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+your-host:gitolite-admin your_name$ git push origin master
+Counting objects: 10, done.
+Compressing objects: 100% (3/3), done.
+Writing objects: 100% (4/4), 402 bytes | 0 bytes/s, done.
+Total 4 (delta 1), reused 0 (delta 0)
+To home:gitolite-admin
+   0b61e82..c53a070  master -&gt; master</code></pre>
+<p>If you added a repo to <code>gitolite.conf</code> you will see a message about initializing a new repo.</p>
+<h3 id="checking-out-on-other-machines">Checking out on other machines</h3>
+<p>On another machine, make sure you have set up your host alias and a SSH keypair that gitolite recognizes, then do</p>
+<pre><code>git clone home:your_repo</code></pre>
+<p>Note that a user <code>other_name</code> clones by running, effectively, <code>git clone your_name@your_host:repo</code>, because the repos live in your account. So they are using SSH to connect to your account, and your <code>~/.ssh/config</code> directs them to use <code>gitolite</code> as a login shell.</p>
+<h3 id="getting-help">Getting help</h3>
+<p>Gitolite can communicate help and usage messages. Try the following:</p>
+<pre><code>ssh home help
+ssh home info
+ssh home desc -h</code></pre>
+<h3 id="remotely-creating-repositories">Remotely creating repositories</h3>
+<p>The lines we added with <code>CREATOR</code> allows users to remotely create and delete repositories. See docs under <a href="http://gitolite.com/gitolite/wild.html">wild repositories</a>.</p>
+<p>Try it out:</p>
+<pre><code>your-host:gitolite-admin your_name$ git clone home:your_name/new_repo
+Cloning into &#39;new_repo&#39;...
+Initialized empty Git repository in /Users/your_name/repositories/your_name/new_repo.git/
+warning: You appear to have cloned an empty repository.
+Checking connectivity... done.</code></pre>
+<p>You can also take an existing repository, set its remote to <code>home/your_name/new_repo</code>, and push it on up.</p>
+<h3 id="remotely-deleting-repositories">Remotely deleting repositories</h3>
+<p>Remotely deleting a repo requires enabling the delete command. To enable &quot;D&quot;, uncomment the relevant line in <code>~/.gitolite.rc</code>.</p>
+<p>Then you can delete repositories where you have the &quot;<code>D</code>&quot; permission:</p>
+<pre><code>your-host:~ your_name$ ssh home D unlock your_name/new_repo
+&#39;your_name/new_repo&#39; is now unlocked
+your-host:~ your_name$ ssh home D rm your_name/new_repo
+&#39;your_name/new_repo&#39; is now gone!</code></pre>
+<h3 id="controlling-access-to-branches">Controlling access to branches</h3>
+<p>Gitolite can also control access to read and write on a per-branch level.</p>
+<p>A useful configuration is to only allow non-forced updates for top-level branches, but allow contributors to do whatever they want (create, delete, force-update) with their own branches. This lets the repo owner control the top level, but contributors make their own branches and pull requests.</p>
+<p><em>TODO</em> show how this is done.</p>
+<h3 id="mirroring-github">Mirroring github</h3>
+<p><em>would like to automatically make a local mirror of my Github stuff; with triggers on pull and push</em></p>

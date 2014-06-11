@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Failure | Illusory stillness]]></title>
+  <link href="http://crowding.github.io/blog/categories/failure/atom.xml" rel="self"/>
+  <link href="http://crowding.github.io/"/>
+  <updated>2014-06-10T23:07:57-07:00</updated>
+  <id>http://crowding.github.io/</id>
+  <author>
+    <name><![CDATA[Peter Meilstrup]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[(Not) Compiling a Raspberry Pi Kernel on OSX]]></title>
+    <link href="http://crowding.github.io/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx/"/>
+    <updated>2014-04-15T00:53:35-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx</id>
+    <content type="html"><![CDATA[<p>One thing leads to another and suddenly you want to compile a new Raspberry Pi kernel, and your most convenient host is a Mac.</p>
+
+<p>I started with <a href="http://www.jaredwolff.com/blog/cross-compiling-on-mac-osx-for-raspberry-pi/">some existing notes</a> about this &mdash;  but I found they needed some tweaking and some updates have happened which make things a little easier.</p>
+
+<p>I&rsquo;m using crosstool-ng from Homebrew on OS X 10.9.</p>
+
+<h1>Instructions</h1>
+
+<h2>Install packages</h2>
+
+<p>These are the packages I needed from Homebrew.</p>
+
+<p><code>
+brew tap homebrew/versions
+brew install gcc48
+brew install crosstool-ng
+brew tap homebrew/dupes
+brew install grep
+brew install gettext
+brew link --force gettext
+brew install ncurses
+brew link --force ncurses
+</code></p>
+
+<p>Note that <code>link --force</code> is not a particularly nice thing to do, and will (e.g.) prevent you from reinstalling crosstool-ng without uninstalling gettext first. But it appears to be necessary, as eglibc build fails without it (and I don&rsquo;t understand if there&rsquo;s an option that will let me specity gettext&rsquo;s location to eglibc)</p>
+
+<h2>Make crosstools use GNU grep</h2>
+
+<p><code>
+chmod u+w /usr/local/Cellar/crosstool-ng/1.19.0/lib/ct-ng.1.19.0/paths.sh
+</code></p>
+
+<p>Edit <code>paths.sh</code>, changing the line about <code>grep</code> to read:</p>
+
+<p><code>
+export grep="/usr/local/bin/ggrep"
+</code></p>
+
+<p>(Is there a user-level config way to do this w/o poking around in the Homebrew cellar?)</p>
+
+<h2>Create disk images</h2>
+
+<p>Crosstools needs case-sensitive file systems to work on, we&rsquo;ll create two images, one to compile in and one to host the binaries.</p>
+
+<p><code>
+cd ~
+mkdir xtools-images
+cd xtools-images
+hdiutil create -size 6g \
+   -attach -type SPARSE -fs 'Case-sensitive Journaled HFS+' \
+   -volname xtools-build-env xtools-build-env
+hdiutil create -size 500m \
+   -attach -type SPARSE -fs 'Case-sensitive Journaled HFS+' \
+   -volname xtools xtools
+</code></p>
+
+<h2>Set up crosstools-ng</h2>
+
+<p>Thanks to <a href="https://github.com/Kentzo/armv6-rpi-linux-gnueabihf">Kentzo</a> there is a Raspberry Pi configuration already in <code>crosstools-ng</code> in Homebrew, and there only need minor adjustments.</p>
+
+<p><code>
+cd /Volumes/xtools-build-env/
+ct-ng armv6-rpi-linux-gnueabi
+</code></p>
+
+<p>Now extract this repository onto the drive image. It contains a <code>.config</code> file and a couple of patches.</p>
+
+<p><code>
+git clone homeGit/peter/raspberry-pi-osx-crosstools-config .
+</code></p>
+
+<p>Then inspect the configuration:</p>
+
+<p><code>
+ct-ng menuconfig
+</code></p>
+
+<p>Check that all the paths under &ldquo;Paths&rdquo; point to somewhere logical (mounted on your disk images)</p>
+
+<p>For extra speed, set &ldquo;Paths::Build behavior::number of parallel jobs&rdquo; to twice your number of cores. This also means you will need to also up the <code>ulimit</code> before building. (If there are weird errors about no rules to make targets related to language localization, you probably forgot to do this.) So now do</p>
+
+<p><code>
+ulimit -n 1024
+ct-ng build
+</code></p>
+
+<p>Hopefully this will work.</p>
+
+<h2>Test the compiler</h2>
+
+<p>```
+cat > test.c</p>
+
+<h1>include &lt;stdio.h></h1>
+
+<p>int main() { printf(&ldquo;Hello, world!\n&rdquo;); return 0; }
+```</p>
+
+<p>(press ctrl-d to finish)</p>
+
+<p><code>
+/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-gcc -o test test.c
+</code></p>
+
+<p>Copy <code>test</code> over to your RPi and try running it.</p>
+
+<p><code>
+scp test pi@raspberrypi.local:
+ssh pi@raspberrypi.local /home/pi/test
+</code></p>
+
+<h1>Compiling a Kernel</h1>
+
+<p>Well this is what I signed up for.</p>
+
+<p>I wanted to build the kernel described <a href="https://github.com/petli/linux/tree/rpi-3.10-usb-sound-backport">here</a>.</p>
+
+<p>I&rsquo;m cribbing from <a href="http://akanto.wordpress.com/2012/09/25/cross-compiling-kernel-for-raspberry-pi-on-fedora-17-part-1/">these</a> notes.</p>
+
+<p><code>
+cd /Volumes/xtools-build-env/
+git clone https://github.com/petli/linux.git -b rpi-3.10-usb-sound-backport
+</code></p>
+
+<p>Copy the existing config.</p>
+
+<p><code>
+scp pi@raspberrypi.local:/proc/config.gz ./linux-config.gz
+gunzip linux-config.gz
+cp linux-config linux/.config
+</code></p>
+
+<p><code>
+make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- oldconfig
+</code></p>
+
+<p><code>menuconfig</code> doersn&rsquo;t work for me because of some <code>ncurses</code> problem but there is <code>make nconfig</code></p>
+
+<p><code>
+make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig
+</code></p>
+
+<p><code>
+make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig
+</code></p>
+
+<p>Now it is complaining about lack of &ldquo;elf.h&rdquo; Where is it looking for elf.h?</p>
+
+<p>```
+sudo cp ../elf.h ../elftypes.h /usr/include</p>
+
+<p>brew install libelf
+sudo ln -s /usr/local/include/libelf /usr/include/libelf
+```</p>
+
+<p>&hellip; and some other advice from the internet, which didn&rsquo;t work either. It&rsquo;s not the &lsquo;echo&rsquo; problem, as that&rsquo;s been long fixed.</p>
+
+<h1>Giving up threshold reached</h1>
+
+<p>&hellip;. oh but adjusting Linux enough to compile in an OSX environment is going to be bad. gonna investigate just installing an Ubuntu VM under VirtualBox and compiling there</p>
+
+<p>honestly a kernel compile on the Pi itself would have finished by now</p>
+]]></content>
+  </entry>
+  
+</feed>

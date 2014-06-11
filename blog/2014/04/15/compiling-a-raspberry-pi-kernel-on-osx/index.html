@@ -1,0 +1,460 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>(Not) Compiling a Raspberry Pi Kernel on OSX - Illusory stillness</title>
+  <meta name="author" content="Peter Meilstrup">
+
+  
+  <meta name="description" content="One thing leads to another and suddenly you want to compile a new Raspberry Pi kernel, and your most convenient host is a Mac. I started with some &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://crowding.github.io/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Illusory stillness" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Illusory stillness</a></h1>
+  
+    <h2>mumble mumble techblog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:crowding.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">(Not) Compiling a Raspberry Pi Kernel on OSX</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-15T00:53:35-07:00" pubdate data-updated="true">2014-04-15</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>One thing leads to another and suddenly you want to compile a new Raspberry Pi kernel, and your most convenient host is a Mac.</p>
+
+<p>I started with <a href="http://www.jaredwolff.com/blog/cross-compiling-on-mac-osx-for-raspberry-pi/">some existing notes</a> about this &mdash;  but I found they needed some tweaking and some updates have happened which make things a little easier.</p>
+
+<p>I&rsquo;m using crosstool-ng from Homebrew on OS X 10.9.</p>
+
+<h1>Instructions</h1>
+
+<h2>Install packages</h2>
+
+<p>These are the packages I needed from Homebrew.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>brew tap homebrew/versions
+</span><span class='line'>brew install gcc48
+</span><span class='line'>brew install crosstool-ng
+</span><span class='line'>brew tap homebrew/dupes
+</span><span class='line'>brew install grep
+</span><span class='line'>brew install gettext
+</span><span class='line'>brew link --force gettext
+</span><span class='line'>brew install ncurses
+</span><span class='line'>brew link --force ncurses</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note that <code>link --force</code> is not a particularly nice thing to do, and will (e.g.) prevent you from reinstalling crosstool-ng without uninstalling gettext first. But it appears to be necessary, as eglibc build fails without it (and I don&rsquo;t understand if there&rsquo;s an option that will let me specity gettext&rsquo;s location to eglibc)</p>
+
+<h2>Make crosstools use GNU grep</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>chmod u+w /usr/local/Cellar/crosstool-ng/1.19.0/lib/ct-ng.1.19.0/paths.sh</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Edit <code>paths.sh</code>, changing the line about <code>grep</code> to read:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>export grep="/usr/local/bin/ggrep"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>(Is there a user-level config way to do this w/o poking around in the Homebrew cellar?)</p>
+
+<h2>Create disk images</h2>
+
+<p>Crosstools needs case-sensitive file systems to work on, we&rsquo;ll create two images, one to compile in and one to host the binaries.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd ~
+</span><span class='line'>mkdir xtools-images
+</span><span class='line'>cd xtools-images
+</span><span class='line'>hdiutil create -size 6g \
+</span><span class='line'>   -attach -type SPARSE -fs 'Case-sensitive Journaled HFS+' \
+</span><span class='line'>   -volname xtools-build-env xtools-build-env
+</span><span class='line'>hdiutil create -size 500m \
+</span><span class='line'>   -attach -type SPARSE -fs 'Case-sensitive Journaled HFS+' \
+</span><span class='line'>   -volname xtools xtools</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Set up crosstools-ng</h2>
+
+<p>Thanks to <a href="https://github.com/Kentzo/armv6-rpi-linux-gnueabihf">Kentzo</a> there is a Raspberry Pi configuration already in <code>crosstools-ng</code> in Homebrew, and there only need minor adjustments.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd /Volumes/xtools-build-env/
+</span><span class='line'>ct-ng armv6-rpi-linux-gnueabi</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now extract this repository onto the drive image. It contains a <code>.config</code> file and a couple of patches.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git clone homeGit/peter/raspberry-pi-osx-crosstools-config .</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then inspect the configuration:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ct-ng menuconfig</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Check that all the paths under &ldquo;Paths&rdquo; point to somewhere logical (mounted on your disk images)</p>
+
+<p>For extra speed, set &ldquo;Paths::Build behavior::number of parallel jobs&rdquo; to twice your number of cores. This also means you will need to also up the <code>ulimit</code> before building. (If there are weird errors about no rules to make targets related to language localization, you probably forgot to do this.) So now do</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ulimit -n 1024
+</span><span class='line'>ct-ng build</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Hopefully this will work.</p>
+
+<h2>Test the compiler</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cat &gt; test.c
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>int main() { printf("Hello, world!\n"); return 0; }</span></code></pre></td></tr></table></div></figure>
+
+
+<p>(press ctrl-d to finish)</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-gcc -o test test.c</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Copy <code>test</code> over to your RPi and try running it.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>scp test pi@raspberrypi.local:
+</span><span class='line'>ssh pi@raspberrypi.local /home/pi/test</span></code></pre></td></tr></table></div></figure>
+
+
+<h1>Compiling a Kernel</h1>
+
+<p>Well this is what I signed up for.</p>
+
+<p>I wanted to build the kernel described <a href="https://github.com/petli/linux/tree/rpi-3.10-usb-sound-backport">here</a>.</p>
+
+<p>I&rsquo;m cribbing from <a href="http://akanto.wordpress.com/2012/09/25/cross-compiling-kernel-for-raspberry-pi-on-fedora-17-part-1/">these</a> notes.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd /Volumes/xtools-build-env/
+</span><span class='line'>git clone https://github.com/petli/linux.git -b rpi-3.10-usb-sound-backport</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Copy the existing config.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>scp pi@raspberrypi.local:/proc/config.gz ./linux-config.gz
+</span><span class='line'>gunzip linux-config.gz
+</span><span class='line'>cp linux-config linux/.config</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- oldconfig</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>menuconfig</code> doersn&rsquo;t work for me because of some <code>ncurses</code> problem but there is <code>make nconfig</code></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now it is complaining about lack of &ldquo;elf.h&rdquo; Where is it looking for elf.h?</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo cp ../elf.h ../elftypes.h /usr/include
+</span><span class='line'> 
+</span><span class='line'>brew install libelf
+</span><span class='line'>sudo ln -s /usr/local/include/libelf /usr/include/libelf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>&hellip; and some other advice from the internet, which didn&rsquo;t work either. It&rsquo;s not the &lsquo;echo&rsquo; problem, as that&rsquo;s been long fixed.</p>
+
+<h1>Giving up threshold reached</h1>
+
+<p>&hellip;. oh but adjusting Linux enough to compile in an OSX environment is going to be bad. gonna investigate just installing an Ubuntu VM under VirtualBox and compiling there</p>
+
+<p>honestly a kernel compile on the Pi itself would have finished by now</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Peter Meilstrup</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-15T00:53:35-07:00" pubdate data-updated="true">2014-04-15</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/failure/'>failure</a>, <a class='category' href='/blog/categories/technote/'>technote</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://crowding.github.io/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx/" data-via="perisaccadic" data-counturl="http://crowding.github.io/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx/" title="Previous Post: Compiling A Raspberry Pi Kernel On Osx">&laquo; Compiling A Raspberry Pi Kernel On Osx</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/04/16/compiling-a-raspberry-pi-kernel-via-ubuntu/" title="Next Post: Compiling A Raspberry Pi Kernel Via Ubuntu">Compiling A Raspberry Pi Kernel Via Ubuntu &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/05/21/itunes-library-manipulation-with-python/">iTunes Library Manipulation With Python</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/19/whitespace-mode/">Whitespace-mode</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/15/time-shifting-an-internet-stream/">Time Shifting an Internet Stream With VLC</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/28/un-pause-programs-in-os-x/">Un-pause Programs in OS X</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/crowding">@crowding</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'crowding',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>My Pinboard</h1>
+  <ul id="pinboard_linkroll">Fetching linkroll...</ul>
+  <p><a href="http://pinboard.in/u:crowding">My Pinboard Bookmarks &raquo;</a></p>
+</section>
+<script type="text/javascript">
+  var linkroll = 'pinboard_linkroll'; //id target for pinboard list
+  var pinboard_user = "crowding"; //id target for pinboard list
+  var pinboard_count = 3; //id target for pinboard list
+  (function(){
+    var pinboardInit = document.createElement('script');
+    pinboardInit.type = 'text/javascript';
+    pinboardInit.async = true;
+    pinboardInit.src = '/javascripts/pinboard.js';
+    document.getElementsByTagName('head')[0].appendChild(pinboardInit);
+  })();
+</script>
+
+
+<section class="twitter">
+  <a class="twitter-timeline" href="https://twitter.com/perisaccadic" data-widget-id="448287882478764032">Tweets by @perisaccadic</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Peter Meilstrup -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

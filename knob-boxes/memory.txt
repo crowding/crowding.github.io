@@ -1,0 +1,37 @@
+There is no way to make OS X reclaim inactive memory without writing out swap -- by definition, inactive memory is memory that is ready to be written out to swap, and writing to swap is how inactive memory is reclaimed. This is not any kind of problem or issue that should be optimized; it is in fact OS X working as designed.
+
+There are many misconceptions about what "inactive memory" means in OS X. Contrary to the misconceptions, inactive memory is not empty, and it is not unused, and it is not cache, and it is not purgeable. The contents of inactive memory cannot simply be discarded. If it were discarded, programs would crash, because the discarded pages would have contained valid data (as the first quote from the OS X developer's manual says,) and programs expect data they have stored in (virtual) memory to not just disappear.
+
+Inactive memory is in fact exactly the same as active memory, in that programs have allocated it and written data to it. The only difference is that OS X has noticed that some chunks of memory have not been read from or written to in a while.
+
+The reason that OS X classifies some memory as inactive and other regions as "active" has to do with swap. When memory runs low, you are going to have to write some data out to swap. The question is, which data? If you swap out data that a program turns out to immediately need again, it wastes time and accomplishes nothing. So you want to swap out memory that a program won't immediately need to use again.
+
+Anticipating which pages are likely to be unneeded in the future is difficult because a program can use its virtual memory however it likes and not tell the OS anything about what its plans are. But as a heuristic, most programs are "sticky" in their memory usage; if they haven't used some piece of memory in a while they are likely to continue not using that memory, and likely to continue using memory that has recently been more active.
+
+So when the OS decides to move some memory into swap, it takes the strategy of swapping pages that haven't been used recently. This is why OS X sorts all the memory that is being occupied by programs into two piles of "active" and "inactive." The above posted link to the Developer manual, if peused a little more, tells how that process happens:
+
+
+
+* When memory starts getting low, the OS starts going through the active memory pages, and sets a flag on each.
+* If a program reads or writes to a page, the flag is cleared.
+* If, after some delay, the flag is not cleared, that page gets sorted into the "inactive" pile.
+* If an "inactive" page is accessed by its program, it is put back into the "active" pile.
+* When memory runs out, the "inactive" pages are written to swap.
+
+Note that this sorting process to decide which memory to swap out is similar across all modern operating systems. Linux has the same two lists of active and inactive pages, as described in [/Understanding the Linux Virtual Memory Manager/](https://www.kernel.org/doc/gorman/html/understand/understand013.html#toc66). Windows uses something a bit different with more than two classes of recency. More implementations are discussed at the Wikipedia page entitled ["Page replacement algorithm"](http://en.wikipedia.org/wiki/Page_replacement_algorithm). The only difference with OS X was how the statistics were shown: someone decided it would be a good idea to show separate numbers for active and inactive in `top` or Activity monitor. In retrospect this was probably not such a good idea (and this has changed in OS X 10.9.)
+
+This process of setting and clearing flags and maintaining active/inactive heaps does take a little bit of processor power. For that reason, OS X doesn't do it when there is a lot of free memory. So the first programs you start up will show up as all "active" memory until free memory starts running low.
+
+So, as you start from a blank slate, and open more and more programs, you can expect to see the following progression in Activity Monitor:
+
+* First, there is a lot of "free" memory and very little inactive. This is because the memory flagger hasn't started running.
+* As the amount of free memory drops, OS X will start running its memory flagger, and you will start to see the amount of "inactive" rising. Eash bit of "inactive" was previously "active."
+* When you run out of free memory, pages from the "inactive" pile will be written to swap. The memory-flagger will also be running full tilt sorting out memory into active and inactive. Typically, you will see a lot of "inactive" while swap is being written to, indicating that the memory-flagger is doing what it is supposed to.
+
+Therefore looking at the amount of "inactive" memory in Activity mointor, and seeing that there is a lot of inactive at the same time as the computer is writing to swap, only tells you that the system is working as designed.
+
+There is also a confusion between inactive memory and cache. I'm not sure why there is that confusion, because Activity Monitor lists them under seprarate headings. Cache is memory used to store recent data that have been read to or written from the file system, in case they need to be accessed again. When memory is low, OS X does tend to get rid of the the cache first. But inactive memory does not contain file system data; it's not backed up on disk and can't be just forgotten.
+
+In conclusion: asking to reduce inactive memory without using swap is literally asking the impossible, and reflects a misunderstanding of what "inactive" means rather than anything to be optimized. If in doubt, ignore the distinction between "inactive" and "active." Recard them as being one lump of "memory used by programs" and add the two numbers together.
+
+NOTE for OS X 10.9: Mavericks introduced "memory compression" which is, more or less, another layer of swap. Active pages now get classified inactive, then compressed, then written to swap as memory usage increases. Mavericks has also has stopped showing separate numbers for active and inactive in Activity Monitor, since it turns out not to be a useful thing to look at, especially given the misconceptions surrounding it.

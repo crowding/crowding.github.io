@@ -1,0 +1,300 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Actually Create a Bootable Linux USB Key for Mac - Illusory stillness</title>
+  <meta name="author" content="Peter Meilstrup">
+
+  
+  <meta name="description" content="I wanted to install Linux on a partition on an older (2008) Macbook Pro. It has no working CD drive. In fact having no CD drive is an accelerating &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://crowding.github.io/blog/2014/04/26/actually-create-a-bootable-linux-usb-key-for-mac">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Illusory stillness" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Illusory stillness</a></h1>
+  
+    <h2>mumble mumble techblog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:crowding.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Actually Create a Bootable Linux USB Key for Mac</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-26T12:32:28-07:00" pubdate data-updated="true">2014-04-26</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>I wanted to install Linux on a partition on an older (2008) Macbook Pro. It has no working CD drive. In fact having no CD drive is an accelerating trend these days.</p>
+
+<p>Now the Ubuntu site has <a href="http://www.ubuntu.com/download/desktop/create-a-usb-stick-on-mac-osx">instructions</a> for making a bootable USB stick. These instructions don&rsquo;t work on my machine. Nonetheless [contrary to some reports], it is completely possible to boot EFI machines off a USB stick. For example, just imaging the OS X installer DVD to a USB key using Disk Utility results in a bootable key. So something is not right with the Ubuntu image or instructions.</p>
+
+<p><a href="http://sevenbits.github.io/Mac-Linux-USB-Loader/">this did not work</a>
+<a href="http://penguintosh.com/about/">this did not even run</a>
+<a href="http://tillmail.de/wordpress/436">this did not work at first either</a> (even the special boot loader)
+installing <a href="">rEFIt</a> gave no boot menu.</p>
+
+<p>So here are directions that actually work.</p>
+
+<p>Install rEFIt, but then I ran the <code>enable_always.sh</code> command, and I finally saw a boot menu on startup, and it detected the EFI file on the USB stick.</p>
+
+<p>However, the <code>bootX64.efi</code> file showed a &ldquo;not compatible&rdquo; error when I tried to boot it. Using the 32-bit bootIA32.efi worked, and got me into a GRUB prompt.</p>
+
+<p>From the GRUB prempt, I typed,</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ls
+</span><span class='line'>ls (hd0,msdos1)
+</span><span class='line'>ls (hd0,msdos1)/efi/boot
+</span><span class='line'>ls (hd0,msdos1)/efi/boot/&lt;name of my .iso&gt;
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Er, no, it looks like I can&rsquo;t actually make this boot an .iso image from the command line. (and the other &ldquo;Linux USB Creator&rdquo; apps installed boot.efi files that gave &ldquo;unsupported&rdquo; errors. So the thing to do is to extract the contents of the .iso and see if GRUB works that way.</p>
+
+<p>Is it possible to create a bootable Linux key without rEFIt on the main drive? Maybe by putting rEFIt in the key. Not sure though.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Peter Meilstrup</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-26T12:32:28-07:00" pubdate data-updated="true">2014-04-26</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/technote/'>technote</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://crowding.github.io/blog/2014/04/26/actually-create-a-bootable-linux-usb-key-for-mac/" data-via="perisaccadic" data-counturl="http://crowding.github.io/blog/2014/04/26/actually-create-a-bootable-linux-usb-key-for-mac/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/04/16/compiling-a-raspberry-pi-kernel-via-ubuntu/" title="Previous Post: Compiling a Raspberry Pi Kernel via Ubuntu">&laquo; Compiling a Raspberry Pi Kernel via Ubuntu</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/04/28/un-pause-programs-in-os-x/" title="Next Post: Un-pause programs in OS X">Un-pause programs in OS X &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/05/21/itunes-library-manipulation-with-python/">iTunes Library Manipulation With Python</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/19/whitespace-mode/">Whitespace-mode</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/15/time-shifting-an-internet-stream/">Time Shifting an Internet Stream With VLC</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/28/un-pause-programs-in-os-x/">Un-pause Programs in OS X</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/crowding">@crowding</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'crowding',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>My Pinboard</h1>
+  <ul id="pinboard_linkroll">Fetching linkroll...</ul>
+  <p><a href="http://pinboard.in/u:crowding">My Pinboard Bookmarks &raquo;</a></p>
+</section>
+<script type="text/javascript">
+  var linkroll = 'pinboard_linkroll'; //id target for pinboard list
+  var pinboard_user = "crowding"; //id target for pinboard list
+  var pinboard_count = 3; //id target for pinboard list
+  (function(){
+    var pinboardInit = document.createElement('script');
+    pinboardInit.type = 'text/javascript';
+    pinboardInit.async = true;
+    pinboardInit.src = '/javascripts/pinboard.js';
+    document.getElementsByTagName('head')[0].appendChild(pinboardInit);
+  })();
+</script>
+
+
+<section class="twitter">
+  <a class="twitter-timeline" href="https://twitter.com/perisaccadic" data-widget-id="448287882478764032">Tweets by @perisaccadic</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Peter Meilstrup -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

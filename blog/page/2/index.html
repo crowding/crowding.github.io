@@ -1,0 +1,522 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Illusory stillness</title>
+  <meta name="author" content="Peter Meilstrup">
+
+  
+  <meta name="description" content="My favorite version of Emacs on OS X is the branch by Yamamoto Mitsuharu. It has improved font rendering, better color calibration and a real full &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://crowding.github.io/blog/page/2">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Illusory stillness" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Illusory stillness</a></h1>
+  
+    <h2>mumble mumble techblog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:crowding.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div class="blog-index">
+  
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/06/the-best-emacs/">The Best Emacs on OS X</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-06T12:40:21-07:00" pubdate data-updated="true">2014-04-06</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>My favorite version of Emacs on OS X is the <a href="">branch by Yamamoto Mitsuharu</a>. It has improved font rendering, better color calibration and a real full screen mode.</p>
+
+<p>Installation is easy using Homebrew:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>brew tap railwaycat/emacsmacport
+</span><span class='line'>brew install emacs-mac
+</span><span class='line'>brew linkapps emacs-mac</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/01/octopress/">Octopress</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-01T13:18:28-07:00" pubdate data-updated="true">2014-04-01</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content">
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/29/enabling-subpixel/">Enabling Subpixel Rendering on Mac OS</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-29T14:12:53-07:00" pubdate data-updated="true">2014-03-29</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I have one of those generic Korean 27&#8221; LCD monitors. It&rsquo;s nice, but Mac OS doesn&rsquo;t recognize it enough to enable subpixel font rendering. Here&rsquo;s how to fix it on OS X 10.6.8, via <a href="http://hints.macworld.com/article.php?story=20090828224632809">MaxOSXHints</a>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>defaults -currentHost write -globalDomain AppleFontSmoothing -int 2</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Especially with a nice font like Source Code Pro, it makes a perceptible difference in clarity.</p>
+
+<p>Related: <a href="http://www.rastertragedy.com/">A longer web page about font rendering than you probably want to read.</a></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/29/vc-home/">Version Controlled Home Directory With Vcsh</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-29T13:25:03-07:00" pubdate data-updated="true">2014-03-29</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&rsquo;ve been keeping all my .dotfiles in a Git repository. Since I&rsquo;m keeping <em>all</em> of them, it&rsquo;s become a big mess. I also had little success with maintaining diverging branches to work on different computers (e.g. Mac vs. Linux, Emacs23 versus Emacs24) while keeping the common. you-d think that exchanging merge operations between branches would work, but actually you need to be constantly rebasing, and Git doesn&rsquo;t have any way of keeping track of what was a rebase of what (which is half the problem with Git) and it&rsquo;s a mess.</p>
+
+<p>I still wonder if maybe darcs would be a better model for VCS home &mdash; it would certainly seem better to the always-rebase school of moving branches in sync.</p>
+
+<p>However, <a href="https://github.com/RichiH/vcsh">vcsh</a> seems to approach at least one aspect of the problem, whcih is to keep different pieces of your mess of config files under differetn headings. So let&rsquo;s see about starting to use that.</p>
+
+<p>Download: It&rsquo;s in Homebrew and Debian, so just brew or apt-get as appropriate.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git clone https://github.com/RichiH/vcsh.git</span></code></pre></td></tr></table></div></figure>
+
+
+<p>First question is does it support tracking things scattered around <code>/etc</code> and so on? It would be nice to have backups for &ldquo;software configurations&rdquo; set up on glibal servers too.</p>
+
+<p>To start with, I went to <a href="hosting_git_on_your_user_account">gitolite</a> and added some space for wild config repositories:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>repo configs/.*
+</span><span class='line'>    C     = peter
+</span><span class='line'>    RW+D  = peter
+</span><span class='line'>
+</span><span class='line'>repo gobal_configs/.*
+</span><span class='line'>    C     = peter
+</span><span class='line'>    RW+D  = peter</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The tutorial for <code>vcsh</code> is located at <code>/usr/doc/vcsh/README.md.gz</code>. For my home directory I started with the &ldquo;template&rdquo; approach, clonign the example MR config to my own server:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>vcsh clone git://github.com/RichiH/vcsh_mr_template.git mr
+</span><span class='line'>vcsh enter mr
+</span><span class='line'>git remote rm origin
+</span><span class='line'>git remote add origin homeGit:configs/mr
+</span><span class='line'>git fetch
+</span><span class='line'>git push origin master
+</span><span class='line'>git branch --set-upstream master origin/master
+</span><span class='line'>exit</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I&rsquo;ll start by making a repo for my my SSH public/authorized keys files. I recently decided not to share private keys between computers and regenerated a new private key on each, so this is a good opportunity to keep the authorized keys straight.</p>
+
+<p>So, as far as I can tell, this is how you add a new config repo:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>vcsh init ssh
+</span><span class='line'>vcsh ssh add .ssh/authorized_keys .ssh/config .ssh/*.pub
+</span><span class='line'>vcsh ssh commit
+</span><span class='line'>vcsh run ssh git remote add origin homeGit:configs/ssh
+</span><span class='line'>vcsh ssh push origin master
+</span><span class='line'>cd .config/mr/available.d/
+</span><span class='line'>cp mr.vcsh ssh.vcsh
+</span><span class='line'>emacs ssh.vcsh #change the URL
+</span><span class='line'>cp ssh.vcsh ../config.d
+</span><span class='line'>vcsh mr add ssh.vcsh ../config.d/ssh.vcsh
+</span><span class='line'>vcsh mr commit
+</span><span class='line'>vcsh mr push</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Wow, really that involved? Twelve damn commands, leaving off one of which does weird things? Color me dubious about this scheme. And there are eight billion untracked files every time making it impossible to see files you don&rsquo;t have under control but should &mdash; can all repos share a .gitignore or what?</p>
+
+<p>Why doesn&rsquo;t &ldquo;vcsh init ssh&rdquo; do like 90% of this?</p>
+
+<p>This is supposed to be easier than symlinking scripts?</p>
+
+<p>Anyhow, the capstone that pushed me from &ldquo;dubious&rdquo; to &ldquo;kill it with fire&rdquo; was this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ vcsh mr commit -m "Added ssh to config dir"
+</span><span class='line'>error: pathspec 'ssh' did not match any file(s) known to git.
+</span><span class='line'>error: pathspec 'to' did not match any file(s) known to git.
+</span><span class='line'>error: pathspec 'config' did not match any file(s) known to git.
+</span><span class='line'>error: pathspec 'dir' did not match any file(s) known to git.</span></code></pre></td></tr></table></div></figure>
+
+
+<p>COMMAND LINE ARGUMENTS.
+THEY CAN HAVE SPACES IN THEM.
+NO, REALLY, <em>THEY CAN.</em>
+JUST BECAUSE YOU WRITE YOUR STUPID THING IN SHELL IS NO EXCUSE FOR THIS SHIT.</p>
+
+<p>Really, tearing apart arguments that were quoted perfectly well is fucking unacceptable for any kind of UNIX utility written after the &lsquo;80s.</p>
+
+<p>Bye now.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ssh homeGit D unlock configs/mr
+</span><span class='line'>ssh homeGit D unlock configs/ssh
+</span><span class='line'>ssh homeGit D rm configs/mr
+</span><span class='line'>ssh homeGit D rm configs/ssh
+</span><span class='line'>sudo apt-get remove mr vcsh
+</span><span class='line'>rm -rf .config/mr .config/vcsh .mrconfig</span></code></pre></td></tr></table></div></figure>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/03/24/hello-world/">Hello World</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-03-24T12:23:11-07:00" pubdate data-updated="true">2014-03-24</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Octopress. A blogging framework for people who want to do it the hard way?</p>
+
+<p>Hello Octopress.</p>
+
+<p>I saw an an interesting post about <a href="http://www.railsonmaui.com/blog/2014/03/05/octopress-setup-with-github-and-org-mode-v2/">driving Octopress from Org-mode</a>, but I&rsquo;m not sure about diving down the Org-mode rabbit hole yet. So&hellip; making a web page with a static site generator with Ruby? Maybe it will turn out better than my attempts to do so with Perl in the late &lsquo;90s.</p>
+
+<p>The thing is that I&rsquo;m not particularly interested in my notes being &lsquo;a voice&rsquo; on the internet or whatever, but it would be nice if they were Google-visible.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  <div class="pagination">
+    
+    <a href="/blog/archives">Blog Archives</a>
+    
+    <a class="next" href="/">Newer &rarr;</a>
+    
+  </div>
+</div>
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/05/21/itunes-library-manipulation-with-python/">iTunes Library Manipulation With Python</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/19/whitespace-mode/">Whitespace-mode</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/15/time-shifting-an-internet-stream/">Time Shifting an Internet Stream With VLC</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/04/28/un-pause-programs-in-os-x/">Un-pause Programs in OS X</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating&#8230;</li>
+  </ul>
+  
+  <a href="https://github.com/crowding">@crowding</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'crowding',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>My Pinboard</h1>
+  <ul id="pinboard_linkroll">Fetching linkroll&#8230;</ul>
+  <p><a href="http://pinboard.in/u:crowding">My Pinboard Bookmarks &raquo;</a></p>
+</section>
+<script type="text/javascript">
+  var linkroll = 'pinboard_linkroll'; //id target for pinboard list
+  var pinboard_user = "crowding"; //id target for pinboard list
+  var pinboard_count = 3; //id target for pinboard list
+  (function(){
+    var pinboardInit = document.createElement('script');
+    pinboardInit.type = 'text/javascript';
+    pinboardInit.async = true;
+    pinboardInit.src = '/javascripts/pinboard.js';
+    document.getElementsByTagName('head')[0].appendChild(pinboardInit);
+  })();
+</script>
+
+
+<section class="twitter">
+  <a class="twitter-timeline" href="https://twitter.com/perisaccadic" data-widget-id="448287882478764032">Tweets by @perisaccadic</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+</section>
+
+
+  
+</aside>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Peter Meilstrup -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

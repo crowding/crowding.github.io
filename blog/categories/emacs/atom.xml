@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Emacs | Illusory stillness]]></title>
+  <link href="http://crowding.github.io/blog/categories/emacs/atom.xml" rel="self"/>
+  <link href="http://crowding.github.io/"/>
+  <updated>2014-09-23T22:48:32-07:00</updated>
+  <id>http://crowding.github.io/</id>
+  <author>
+    <name><![CDATA[Peter Meilstrup]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Racket and Flycheck-mode]]></title>
+    <link href="http://crowding.github.io/blog/2014/09/20/racket-and-flycheck-mode/"/>
+    <updated>2014-09-20T16:26:23-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/09/20/racket-and-flycheck-mode</id>
+    <content type="html"><![CDATA[<p>From <a href="{*post-url%202014-09-05-get-emacs-set-up-for-racket.markdown*}">earlier</a>, I had the following complaints about flycheck:</p>
+
+<blockquote><p>As I edit code I&rsquo;m getting this annoyingly big message in the minibuffer:</p>
+
+<p>```
+Checker racket returned non-zero exit code 1, but no errors from output: r5rs:body: no expression in body
+  in: (r5rs:body (define (new-record data) attach-tag data) (define (get-record name) (new-record data)) (define (get-salary record) (quote salary)))
+  context&hellip;:
+   /Applications/Racket v6.1/share/pkgs/r5rs-lib/r5rs/main.rkt:335:2</p>
+
+<p>Checker definition probably flawed.
+```</p>
+
+<p>In other words, one kind of syntax error (no expression on body) is not getting interpreted as an &ldquo;error&rdquo;.</p></blockquote>
+
+<p>To fix this, I need to fix the error patterns that Racket checker uses, to make it catch a certain error as an error.</p>
+
+<p>Now, what is some example output from the racket compiler? I ran <code>M-! racket -f chap3.1.rkt</code> and went to the <code>*Shell Command Output*</code> buffer.</p>
+
+<p>I will play with regexp-builder on that, but how do I add error patterns to the existing thing?</p>
+
+<p>Additionally, I find that the error highlighting is one character off. Racket reporting zero-based colukmn numbers or something. Also the entire following sexp should be underlined (as opposed to underlining a single paren.)</p>
+
+<h3>more advanced syntax checking?</h3>
+
+<p>Well, Racket actually <a href="http://docs.racket-lang.org/tools/Check_Syntax.html">has a syntax checker module</a>, while this is just reporting the errors on trying to load a file. So how to make emacs talk to <code>drracket/check-syntax</code> package? Apparently one must write a Racket script. I don&rsquo;t know what it is saying about syntax objects. <code>(make-traversal ...)</code> apparently makes a Visitor type thing, but where do I get the visited?</p>
+
+<p><a href="http://docs.racket-lang.org/reference/syntax-model.html#%28part._stxobj-model%29">Syntax objects</a></p>
+
+<p>On the other hand, I don&rsquo;t see the &ldquo;Check Syntax&rdquo; button in DrRacket giving any more information about those pesky &ldquo;no expression in body&rdquo; errors (like a line number would be helpful!)</p>
+
+<p>Okay, put this down for now.</p>
+
+<p>```</p>
+
+<blockquote><p>(make-traversal (make-base-namespace) &ldquo;chap3.1.rkt&rdquo;)</p>
+
+<h1>&lt;procedure:expanded-expression></h1>
+
+<h1>&lt;procedure:expansion-completed></h1>
+
+<p>```</p>
+
+<p>Actually this particular syntax error (at least when writing code in the <code>#lang planet neil/sicp</code> module) is annoying because it won&rsquo;t point you to the line on which error occurs despite it being mostly syntax. Usually turns out to be an &lsquo;if&rsquo; with no clauses, a duplicated paren, or something.</p>
+
+<p>Additionally, the red underline that flycheck puts is misplaced and tiny (it is frequently on an open paren, when it should really be on all of the first sexp inside that paren).</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Fixing Geiser-racket-repl's Error Links]]></title>
+    <link href="http://crowding.github.io/blog/2014/09/09/fixing-geiser-racket-repls-error-links/"/>
+    <updated>2014-09-09T22:36:52-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/09/09/fixing-geiser-racket-repls-error-links</id>
+    <content type="html"><![CDATA[<p>Geiser REPL mode is pretty good, but man the error links were (a) broken and (b) eyewatering. Here&rsquo;s an example:</p>
+
+<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | "title text" ["alt text"]] %}</p>
+
+<p>I mean, are there error messages somewhere in all those pathnames and red?</p>
+
+<p>After some fussing I got it to look better.</p>
+
+<!-- more -->
+
+
+<h3>The fussing</h3>
+
+<p>Anyway, the fontification for errors is hideously wrong: error <em>message</em> should be eyewatering, <em>full path to file</em> should be muted (except for maybe the basename.)</p>
+
+<p>It&rsquo;s seriously impeding my ability to read, so let&rsquo;s&hellip;.</p>
+
+<p>Actually this is a similar problem as with flycheck, perhaps? Let&rsquo;s find the fontification problem first.</p>
+
+<p>&hellip; this is harder than I thought. Why, when I <code>(setq font-lock-keywords nil)</code> then <code>(font-lock-fontify-buffer)</code>, does it
+not clear fontification? Ah. I want <code>(font-lock-defontify)</code> No wait, I
+actually want <code>(font-lock-unfontify-buffer)</code>. And that makes it clear
+that the underlines links are not coming from fontity-buffer. Are they
+coming from compilation-mode somehow? Okay, so <code>geiser-repl-mode</code>
+calls <code>(compilation-setup)</code> to enter <code>compilation-shell-minor-mode</code> We
+have <code>compilation-font-lock-keywords</code> which doesn&rsquo;t seem to have the
+keywords.</p>
+
+<p>Ah! It&rsquo;s <code>compilation-error-regexp-alist</code>.</p>
+
+<p>After <a href="2014-09-09-editing-regexes-interactively-in-emacs.html">some futzing around with regex-builder and structured regexes</a> I came to a number of different regexes, like so:</p>
+
+<p>```
+(defadvice geiser-repl&mdash;startup (after pbm-geiser-repl-errors activate)
+  (message &ldquo;setting up geiser repl error highlighting&rdquo;)
+  (set (make-local-variable &lsquo;compilation-error-regexp-alist)</p>
+
+<pre><code>   `(
+     ;; &lt;path&gt;:line:col: error message
+     ;; &lt;path&gt;: [not a function name]
+     (,(rx (seq bol
+                (or "" "   ")
+                (group-n 1
+                         (one-or-more (not (any ":\n \t&gt;")))
+                         (zero-or-more (not (any ":\n\t&gt;"))))
+                ": "
+                (group-n 2 (seq "[" (minimal-match (one-or-more anything)) "]"))))
+      1 nil nil 0 1
+      (1 file-name-shadow-properties)
+      (2 file-name-shadow-properties))
+     ;; &lt;path&gt;:&lt;line&gt;:&lt;col&gt;: &lt;function-name&gt;
+     (,(rx (seq bol
+                (or "" "   ")
+                (group-n 1
+                         (one-or-more (not (any ":\n \t&gt;")))
+                         (zero-or-more (not (any ":\n\t&gt;"))))
+                ":" (group-n 2 (one-or-more digit))
+                ":" (group-n 3 (one-or-more digit))
+                ": "
+                (group-n 4 (one-or-more (any word "-_~!/@$%^&amp;&lt;&gt;{}?")))
+                eol))
+      1 2 3 0 1
+      (1 file-name-shadow-properties)
+      (4 font-lock-function-name-face))
+     ;; &lt;path&gt;:line:col: error message
+     (,(rx (seq bol
+                (or "" "   ")
+                (group-n 1
+                         (one-or-more (not (any ":\n \t&gt;")))
+                         (zero-or-more (not (any ":\n\t&gt;"))))
+                ":" (group-n 2 (one-or-more digit))
+                ":" (group-n 3 (one-or-more digit))
+                ": "
+                (group-n 4 (minimal-match (one-or-more anything)))
+                eol))
+      1 2 3 2 1
+      (1 file-name-shadow-properties)
+      (4 compilation-error-face))
+     ;; &lt;function-name&gt;: &lt;error-message&gt;
+     (,(rx (seq bol
+                (or "" "   ")
+                (group-n 1 (one-or-more (any word "-_~!/@$%^&amp;&lt;&gt;{}?.")))
+                (group-n 2 "")
+                ": "
+                (group-n 3 (minimal-match (one-or-more anything)))
+                eol))
+      nil nil nil 2 2
+      (1 font-lock-function-name-face)
+      (3 compilation-error-face))
+     ;; &lt;path&gt;:&lt;line&gt;:&lt;col&gt;
+     (,(rx (seq bol
+                (or "" "   ")
+                (group-n 1
+                         (one-or-more (not (any ":\n \t&gt;")))
+                         (zero-or-more (not (any ":\n\t&gt;"))))
+                ":" (group-n 2 (zero-or-more digit))
+                ":" (group-n 3 (zero-or-more digit))
+                eol))
+      1 2 3 0 1
+      (1 file-name-shadow-properties)))))
+</code></pre>
+
+<p>```</p>
+
+<p>Which looks much better:</p>
+
+<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | "title text" ["alt text"]] %}</p>
+
+<p>Ah, see, the actual error message is highlighted, and the pile of linked pathnames is muted.</p>
+
+<p>It&rsquo;s not perfect but it&rsquo;s a definite improvement.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Editing Structured Regexes Interactively in Emacs]]></title>
+    <link href="http://crowding.github.io/blog/2014/09/09/editing-regexes-interactively-in-emacs/"/>
+    <updated>2014-09-09T15:50:44-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/09/09/editing-regexes-interactively-in-emacs</id>
+    <content type="html"><![CDATA[<p>I was using regex-builder to make something, but it still looked like this:</p>
+
+<p><code>
+"^ *\\([^:(\t\n]+\\)\\(:\\([0-9]+\\)\\)?\\(:\\([0-9]+\\)\\)?\\(: \\(\\(\\w\\|\\s_\\)+\\|\\[\\(\\w\\|\\s \\)+\\]\\)\\)?\\(: \\(.*\\)\\)?"
+</code></p>
+
+<p>Leaning-toothpicks syndrome is kicking my ass. What if I write a regex using S-expressions? Wouldn&rsquo;t that be the bee&rsquo;s knees?</p>
+
+<p>Well, one thing I can do use use the <code>rx</code> macro, but <code>re-builder</code> doesn&rsquo;t seem to want to work with it. I call <code>(reb-change-syntax)</code> to select &lsquo;rx&rsquo; but it only performs a search sometimes? And often finds no matches?</p>
+
+<p>Debugging from this impetus I get to stepping through <code>reb-update-overlays</code> but I can&rsquo;t inspect the value of local variables in either <code>edebug</code> or <code>debug</code> for some weird reason. (Because of <code>-*- lexical-binding:t -*-</code> in the file.)</p>
+
+<p>New yak frame: how to inspect vars in  lexically bound code? It&rsquo;s probably impossible, though there was an incomplete <a href="http://emacs.1067599.n5.nabble.com/Edebug-amp-lexical-scope-td202618.html">thread</a> about it a couple years ago.</p>
+
+<p>Well, I guess I&rsquo;ll debug it by adding messages.</p>
+
+<p>Now, I find that when I use <code>(rx (one-or-more "/"))</code>, that macro should expand to <code>"/+"</code> but but the regexp we search for is actually <code>"\\(?:/\\+\\)"</code> which doesn&rsquo;t look like a proper regex. What is <code>reb-target-binding</code> doing? Pulling the binding from the target buffer. What&rsquo;s <code>reb-cook-regexp</code> doing? Calling <code>rx-to-string</code> on the result of an <code>rx</code> macro. Which it shouldn&rsquo;t?</p>
+
+<p>Oh, I was typing
+<code>
+(rx (one-or-more ":"))
+</code>
+in the buffer like a sucker (idk, that&rsquo;s what you would write in Elisp?). Turns out I need to type</p>
+
+<p><code>
+'(one-or-more ":")
+</code></p>
+
+<p>So how do I do a longer regex????? Use <code>and</code>/<code>seq</code>. It should be called <code>progn</code>, shouldn&rsquo;t it? Turns out I should write in regexp-builder like</p>
+
+<p><code>
+'(seq (one-or-more ":") (class )
+</code></p>
+
+<p>So now I write regexps in regexp-builder like:</p>
+
+<p>```
+&lsquo;(seq bol (zero-or-more &ldquo; &rdquo;)</p>
+
+<pre><code>  (group (one-or-more (not (char ":\n\t"))))
+  (zero-or-one ":" (group (one-or-more digit)))
+  (zero-or-one ":" (group (one-or-more digit)))
+  (zero-or-one ": " (group (one-or-more (or (syntax word) (syntax symbol))))))
+</code></pre>
+
+<p>```</p>
+
+<p>and then paste the <code>(seq ...)</code> into an <code>(rx ...)</code> macro when I&rsquo;m done.</p>
+
+<p>Well, there&rsquo;s one more problem. Sometimes I can type a correct regexp and it won&rsquo;t update (it actually removes all highlights). Seems to have something to do with regexp-builder behaving inappropriately when an edit doesn&rsquo;t change the compiled form of the regexp. But I can then call <code>(reb-force-update)</code> and it does, that&rsquo;ll work for now.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Get Emacs Set Up for Racket]]></title>
+    <link href="http://crowding.github.io/blog/2014/09/05/get-emacs-set-up-for-racket/"/>
+    <updated>2014-09-05T13:24:15-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/09/05/get-emacs-set-up-for-racket</id>
+    <content type="html"><![CDATA[<p>I want to get back to doing problems out of SICP, but I want to use a more familiar editor.</p>
+
+<p>Racket suggests Geiser and Quack. I already have Geiser installed from sopme package archive when I aborted an earlier attempt (and Geiser is supposed to, independently, include a version of Quack, or something?)</p>
+
+<!-- more -->
+
+
+<p>When I go to edit a .rkt file, I end up in Scheme-mode, defined in <code>scheme.el</code>. Is this Geiser? No &mdash; Geiser is the bit that interacts with the REPL, and it&rsquo;s not enabled.</p>
+
+<p><code>
+(add-hook 'scheme-mode-hook 'geiser-mode)
+</code></p>
+
+<p>Wait, the indicator for Geiser mode is that it says &ldquo;Racket/A&rdquo; in the modeline._Geiser is a minor-mode.</p>
+
+<p>So how do I start a Racket interpreter? <code>M-x run-geiser</code>. It asks me whether I want Racket or Guile. Despite what the manual claims, I can&rsquo;t make that a <em>default</em>. I can make it  <em>the only option</em> by saying there is no Guile to worry about.:</p>
+
+<p><code>
+(setq geiser-active-implementations '(racket))
+</code></p>
+
+<p>There appears to be no notion of &ldquo;use a default but allow you to select from options with a <code>C-u</code> prefix&rdquo; which would strike me as a more Emacsy way of doing it. ಠ_ಠ (And it also turns out you can do <code>M-x run-racket</code>.)</p>
+
+<p>Now, the REPL appears with this error:</p>
+
+<p><code>
+Welcome to Racket v6.0.1.
+/Users/peter/.emacs.d/elpa/geiser-0.5/scheme/racket/geiser/user.rkt:17:9: collection not found
+  for module path: mzlib/thread
+  collection: "mzlib"
+  in collection directories:
+   /Users/peter/Library/Racket/6.0.1/collects
+   /usr/local/Cellar/plt-racket/6.0.1/share/racket/collects
+   /Users/peter/.emacs.d/elpa/geiser-0.5/scheme/racket/
+  context...:
+   show-collection-err
+   standard-module-name-resolver
+   standard-module-name-resolver
+</code></p>
+
+<p>The first problem this points to is that it&rsquo;s running Racket out of Homebrew, not the mroe complete one I downloaded from the Racket website.</p>
+
+<p>It looks like one is expected to add /Applications/Racket/{bin,man}, etc to one&rsquo;s path(s). I did that in the form of a Homeshick module:</p>
+
+<p><code>
+$ homeshick generate plt-racket
+$ homeshick cd plt-racket
+$ mkdir home/.bashrc_includes
+$ echo 'export PATH=/Applications/Racket\ v6.1/bin:$PATH' &gt; home/.bashrc_includes/racket.sh
+$ homeshick link plt-racket
+</code></p>
+
+<p>Alternately, I think I could have done<code>$ raco pkg install compatibility-lib</code> to fix the error in Homebrew&rsquo;s Racket.</p>
+
+<p>Finally, I&rsquo;ll install racket-mode from ELPA.</p>
+
+<h3>How do I use this thing?</h3>
+
+<p>NowI need to learn the things that I already knew for other Emacs-based REPLS.</p>
+
+<ul>
+<li>How do I load a whole file into the Racket interpreter? <code>C-c C-b</code>?
+
+<ul>
+<li>(Gohd, how do I make keybindings for all the different flavors of Comint more consistent?)</li>
+</ul>
+</li>
+<li>How do I interactively send forms to the Racket interpreter? <code>C-x C-e</code>, same as Emacs lisp.</li>
+<li>How do I switch between more than one instance of Racket interpreter? Uhhhhhh&hellip;..</li>
+<li>&ldquo;Switching between modules&rdquo; seems important somehow. You do it with <code>C-c C-m</code> and <code>C-c C-a</code> in editing buffers.</li>
+<li><code>C-c C-z</code> for &ldquo;jump to REPL&rdquo;, <code>C-c C-a</code> for jump to REPL and switch module.</li>
+</ul>
+
+
+<h3>What about <code>#lang</code> directive?</h3>
+
+<p>Pressing <code>C-c C-b</code> in one of my SICP problem sets got me:</p>
+
+<pre><code>Error: retort-syntax
+
+UNKNOWN::862: read: #lang not enabled in the current context
+  context...:
+   /Applications/Racket v6.1/collects/racket/private/misc.rkt:87:7
+racket@&gt;
+
+Expression evaluated was:
+
+#lang planet neil/sicp
+</code></pre>
+
+<p>This means actually I should use <code>C-c C-a</code>. I knew modules sounded important! Note that this does&rsquo;t auto-save before loading, so I often give a <code>C-x C-s C-c C-a</code> sequence. I cut that out by making it autosave:</p>
+
+<p><code>
+(define geiser-buffer-p ()
+  "true if current buffer is a Geiser buffer"
+  geiser-mode)
+;
+(defun geiser-repl-save-some-buffers-and-enter-module ()
+  (interactive)
+  (save-some-buffers t 'geiser-buffer-p)
+  (geiser-mode-switch-to-repl-and-enter))
+;
+(define-key geiser-mode-map (kbd "C-c C-a")
+  'geiser-repl-save-some-buffers-and-enter-module)
+</code></p>
+
+<h3>Now how do I get autocompletion?</h3>
+
+<p>Something happens when I press Tab, so far so good.</p>
+
+<h3>And what about documentation!</h3>
+
+<p>Autodoc is enabled and it&rsquo;s like eldoc.
+<code>C-c C-d d</code> for jump to documentation for symbol at point
+<code>C-c C-d i</code> finds it in the Racket manual in your web browser.
+<code>C-c C-d m</code> lists the bindings in a module.</p>
+
+<p>Cool, this is looking like it will work.</p>
+
+<h3>And what about linting / flychecking?</h3>
+
+<p>I turn on flycheck mode? Haven&rsquo;t seen it do anything yet. Ah, there it goes. I want to make it more obtrusive (its error highlights are single characters often.)</p>
+
+<p>Also, as I edit code I&rsquo;m getting this annoyingly big message in the minibuffer:</p>
+
+<p>```
+Checker racket returned non-zero exit code 1, but no errors from output: r5rs:body: no expression in body
+  in: (r5rs:body (define (new-record data) attach-tag data) (define (get-record name) (new-record data)) (define (get-salary record) (quote salary)))
+  context&hellip;:
+   /Applications/Racket v6.1/share/pkgs/r5rs-lib/r5rs/main.rkt:335:2</p>
+
+<p>Checker definition probably flawed.
+```</p>
+
+<p>In other words, one kind of syntax error (no expression on body) is not getting interpreted as an &ldquo;error&rdquo;.</p>
+
+<p>Actually this particular syntax error (at least when writing code in the <code>#lang planet neil/sicp</code> module) is annoying because it won&rsquo;t point you to the line on which error occurs despite it being mostly syntax. Usually turns out to be an &lsquo;if&rsquo; with no clauses, a duplicated paren, or something.</p>
+
+<p>Additionally, the red underline that flycheck puts is misplaced and tiny (it is frequently on an open paren, when it should really be on all of the first sexp inside that paren).</p>
+
+<h3>How about autocomplete in the REPL for symbols defined in my module? How about eldoc for my own definitions?</h3>
+
+<p>This should be possible, right? I&rsquo;m getting &ldquo;end of file during parsing&rdquo; errors. I don&rsquo;t get it. But DrRacket was not autocompleting symbols defined in buffer either.</p>
+
+<p>Autocomplete in REPL does seem to work once I can successfully load the module.</p>
+
+<p>However, there appear to be situations in which the link between Geiser and Racket freezes up.</p>
+
+<h3>What does &ldquo;compile&rdquo; do?</h3>
+
+<p>As far as I can tell, <code>C-c C-k</code> on one of my SICP problemsets pops up a &ldquo;compile&rdquo; buffer with the following contents:</p>
+
+<p>```
+Compiling /Users/peter/sicp/chap2.4.rkt &hellip;</p>
+
+<p>Error: retort-syntax</p>
+
+<p>(mcons (mcons &lsquo;result (mcons &ldquo;#<void>&rdquo; &rsquo;())) (mcons (mcons &lsquo;output &ldquo;&rdquo;) &rsquo;()))
+<a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#111;&#58;&#x72;&#97;&#x63;&#x6b;&#x65;&#116;&#x40;&#x63;&#104;&#97;&#x70;&#50;&#46;&#52;&#x2e;&#114;&#x6b;&#116;">&#114;&#x61;&#99;&#x6b;&#101;&#x74;&#64;&#x63;&#x68;&#97;&#112;&#x32;&#46;&#x34;&#x2e;&#x72;&#107;&#x74;</a>>
+```</p>
+
+<p>&ldquo;Retort-syntax&rdquo;? WTH?</p>
+
+<h3>Navigating errors.</h3>
+
+<p><code>&lt;backtab&gt;</code>  and <tab> navigates errors in the buffer. <code>&lt;tab&gt;</code> also indents or autocompletes symbols. But <code>&lt;tab&gt;</code> from an empty prompt doesn&rsquo;t DWIM &ldquo;go to previous error, then preceding prompt, then next error&rdquo; from an empty prompt, which it should (then I could just tab to the most likely link I want to take, then <code>&lt;return&gt;</code> to follow it, two keystrokes.)</p>
+
+<p>The error links were not always working, and were ugly, so I <a href="2014-09-09-fixing-geiser-racket-repls-error-links.html">spent some time fixing them.</a></p>
+
+<p>This led to error links not actually navigating to the error when I pressed <code>&lt;return&gt;</code>, so I added this to restore that behavior:</p>
+
+<p>```
+(defun geiser-repl&mdash;follow-error-or-maybe-send ()
+  (interactive)
+  (if (get-text-property (point) &lsquo;compilation-message)</p>
+
+<pre><code>  (compile-goto-error)
+  (geiser-repl--maybe-send)))
+</code></pre>
+
+<p>(define-key geiser-repl-mode-map (kbd &ldquo;<return>&rdquo;)
+  &lsquo;geiser-repl&mdash;follow-error-or-maybe-send)
+```</p>
+
+<h3>Set the output syntax</h3>
+
+<p>The &ldquo;write&rdquo; output syntax puts &ldquo;mcons&rdquo; everywhere. In DrRacket, one can choose the &ldquo;write&rdquo; output style to elide the difference between mutable and immutable output cells. How does that work from the REPL? (Answered in <a href="http://stackoverflow.com/questions/25775600/change-output-printing-style-from-racket-repl/25777882?noredirect=1#comment40353857_25777882">Stack Overflow question</a>. How to do this automatically, haven&rsquo;t worked out yet.)</p>
+
+<h3>Improve error display</h3>
+
+<p>To what extent can Racket error output be customized? Sometimes it elides path names with &ldquo;<code>...</code>&rdquo; which is annoying. Other times it elides path names for good.</p>
+
+<h3>Weird issues</h3>
+
+<p>Occasionally in the Geiser REPL I will be unable to use <code>C-a</code> to go to back to the prompt, if point is at the end of buffer. What gives?</p>
+]]></content>
+  </entry>
+  
+</feed>

@@ -9,7 +9,7 @@
   <meta name="author" content="Peter Meilstrup">
 
   
-  <meta name="description" content="Current project: filter out duplicates and CDs with missing tracks from library. Using: Python/appscript. Er, first upgrading my Python/IPython? I &hellip;">
+  <meta name="description" content="From earlier, I had the following complaints about flycheck: As I edit code I&rsquo;m getting this annoyingly big message in the minibuffer: &#8220 &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,603 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/09/20/racket-and-flycheck-mode/">Racket and Flycheck-mode</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-20T16:26:23-07:00" pubdate data-updated="true">2014-09-20</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>From <a href="{*post-url%202014-09-05-get-emacs-set-up-for-racket.markdown*}">earlier</a>, I had the following complaints about flycheck:</p>
+
+<blockquote><p>As I edit code I&rsquo;m getting this annoyingly big message in the minibuffer:</p>
+
+<p>&#8220;`
+Checker racket returned non-zero exit code 1, but no errors from output: r5rs:body: no expression in body
+  in: (r5rs:body (define (new-record data) attach-tag data) (define (get-record name) (new-record data)) (define (get-salary record) (quote salary)))
+  context&hellip;:
+   /Applications/Racket v6.1/share/pkgs/r5rs-lib/r5rs/main.rkt:335:2</p>
+
+<p>Checker definition probably flawed.
+&#8220;`</p>
+
+<p>In other words, one kind of syntax error (no expression on body) is not getting interpreted as an &ldquo;error&rdquo;.</p></blockquote>
+
+<p>To fix this, I need to fix the error patterns that Racket checker uses, to make it catch a certain error as an error.</p>
+
+<p>Now, what is some example output from the racket compiler? I ran <code>M-! racket -f chap3.1.rkt</code> and went to the <code>*Shell Command Output*</code> buffer.</p>
+
+<p>I will play with regexp-builder on that, but how do I add error patterns to the existing thing?</p>
+
+<p>Additionally, I find that the error highlighting is one character off. Racket reporting zero-based colukmn numbers or something. Also the entire following sexp should be underlined (as opposed to underlining a single paren.)</p>
+
+<h3>more advanced syntax checking?</h3>
+
+<p>Well, Racket actually <a href="http://docs.racket-lang.org/tools/Check_Syntax.html">has a syntax checker module</a>, while this is just reporting the errors on trying to load a file. So how to make emacs talk to <code>drracket/check-syntax</code> package? Apparently one must write a Racket script. I don&rsquo;t know what it is saying about syntax objects. <code>(make-traversal ...)</code> apparently makes a Visitor type thing, but where do I get the visited?</p>
+
+<p><a href="http://docs.racket-lang.org/reference/syntax-model.html#%28part._stxobj-model%29">Syntax objects</a></p>
+
+<p>On the other hand, I don&rsquo;t see the &ldquo;Check Syntax&rdquo; button in DrRacket giving any more information about those pesky &ldquo;no expression in body&rdquo; errors (like a line number would be helpful!)</p>
+
+<p>Okay, put this down for now.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&gt; (make-traversal (make-base-namespace) "chap3.1.rkt")
+</span><span class='line'>#&lt;procedure:expanded-expression&gt;
+</span><span class='line'>#&lt;procedure:expansion-completed&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<blockquote><p>Actually this particular syntax error (at least when writing code in the <code>#lang planet neil/sicp</code> module) is annoying because it won&rsquo;t point you to the line on which error occurs despite it being mostly syntax. Usually turns out to be an &lsquo;if&rsquo; with no clauses, a duplicated paren, or something.</p>
+
+<p>Additionally, the red underline that flycheck puts is misplaced and tiny (it is frequently on an open paren, when it should really be on all of the first sexp inside that paren).</p></blockquote>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/09/09/fixing-geiser-racket-repls-error-links/">Fixing Geiser-racket-repl&#8217;s Error Links</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-09T22:36:52-07:00" pubdate data-updated="true">2014-09-09</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Geiser REPL mode is pretty good, but man the error links were (a) broken and (b) eyewatering. Here&rsquo;s an example:</p>
+
+<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | &ldquo;title text&rdquo; [&ldquo;alt text&rdquo;]] %}</p>
+
+<p>I mean, are there error messages somewhere in all those pathnames and red?</p>
+
+<p>After some fussing I got it to look better.</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/09/09/fixing-geiser-racket-repls-error-links/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/09/09/editing-regexes-interactively-in-emacs/">Editing Structured Regexes Interactively in Emacs</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-09T15:50:44-07:00" pubdate data-updated="true">2014-09-09</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I was using regex-builder to make something, but it still looked like this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>"^ *\\([^:(\t\n]+\\)\\(:\\([0-9]+\\)\\)?\\(:\\([0-9]+\\)\\)?\\(: \\(\\(\\w\\|\\s_\\)+\\|\\[\\(\\w\\|\\s \\)+\\]\\)\\)?\\(: \\(.*\\)\\)?"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Leaning-toothpicks syndrome is kicking my ass. What if I write a regex using S-expressions? Wouldn&rsquo;t that be the bee&rsquo;s knees?</p>
+
+<p>Well, one thing I can do use use the <code>rx</code> macro, but <code>re-builder</code> doesn&rsquo;t seem to want to work with it. I call <code>(reb-change-syntax)</code> to select &lsquo;rx&rsquo; but it only performs a search sometimes? And often finds no matches?</p>
+
+<p>Debugging from this impetus I get to stepping through <code>reb-update-overlays</code> but I can&rsquo;t inspect the value of local variables in either <code>edebug</code> or <code>debug</code> for some weird reason. (Because of <code>-*- lexical-binding:t -*-</code> in the file.)</p>
+
+<p>New yak frame: how to inspect vars in  lexically bound code? It&rsquo;s probably impossible, though there was an incomplete <a href="http://emacs.1067599.n5.nabble.com/Edebug-amp-lexical-scope-td202618.html">thread</a> about it a couple years ago.</p>
+
+<p>Well, I guess I&rsquo;ll debug it by adding messages.</p>
+
+<p>Now, I find that when I use <code>(rx (one-or-more "/"))</code>, that macro should expand to <code>"/+"</code> but but the regexp we search for is actually <code>"\\(?:/\\+\\)"</code> which doesn&rsquo;t look like a proper regex. What is <code>reb-target-binding</code> doing? Pulling the binding from the target buffer. What&rsquo;s <code>reb-cook-regexp</code> doing? Calling <code>rx-to-string</code> on the result of an <code>rx</code> macro. Which it shouldn&rsquo;t?</p>
+
+<p>Oh, I was typing</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(rx (one-or-more ":"))</span></code></pre></td></tr></table></div></figure>
+
+
+<p>in the buffer like a sucker (idk, that&rsquo;s what you would write in Elisp?). Turns out I need to type</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>'(one-or-more ":")</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So how do I do a longer regex????? Use <code>and</code>/<code>seq</code>. It should be called <code>progn</code>, shouldn&rsquo;t it? Turns out I should write in regexp-builder like</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>'(seq (one-or-more ":") (class )</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So now I write regexps in regexp-builder like:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>'(seq bol (zero-or-more " ")
+</span><span class='line'>      (group (one-or-more (not (char ":\n\t"))))
+</span><span class='line'>      (zero-or-one ":" (group (one-or-more digit)))
+</span><span class='line'>      (zero-or-one ":" (group (one-or-more digit)))
+</span><span class='line'>      (zero-or-one ": " (group (one-or-more (or (syntax word) (syntax symbol))))))</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and then paste the <code>(seq ...)</code> into an <code>(rx ...)</code> macro when I&rsquo;m done.</p>
+
+<p>Well, there&rsquo;s one more problem. Sometimes I can type a correct regexp and it won&rsquo;t update (it actually removes all highlights). Seems to have something to do with regexp-builder behaving inappropriately when an edit doesn&rsquo;t change the compiled form of the regexp. But I can then call <code>(reb-force-update)</code> and it does, that&rsquo;ll work for now.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/09/05/get-emacs-set-up-for-racket/">Get Emacs Set Up for Racket</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-05T13:24:15-07:00" pubdate data-updated="true">2014-09-05</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I want to get back to doing problems out of SICP, but I want to use a more familiar editor.</p>
+
+<p>Racket suggests Geiser and Quack. I already have Geiser installed from sopme package archive when I aborted an earlier attempt (and Geiser is supposed to, independently, include a version of Quack, or something?)</p>
+
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/09/05/get-emacs-set-up-for-racket/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/08/23/a-strange-writing-tic/">A Strange Writing Tic</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-23T17:07:19-07:00" pubdate data-updated="true">2014-08-23</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>So I recently read <em>Turing&rsquo;s Cathedral</em> by George Dyson, and then I read <em>Sons of the Profits,</em> and realized they both have the same verbal tic that I found made them hard to keep going with. The problem is that they  have paragrapph and section breaks that leave as much hanging in the air as possible.</p>
+
+<p>This is a technique that, in the right hands, provides some driving force and compellingness to a narrative, but when overused makes a book more difficult to read. The basic structure looks something like this:</p>
+
+<p><em>things about Person A</em>
+<em>Oblique, unexplained reference or injoke about Person B in context</em>
+<em>Paragraph break</em>
+<em>Introduction of Person B</em>
+<em>Explanation of injoke from previous paragraph</em>
+<em>Things person B does</em></p>
+
+<p>Between the end of the last paragraph and the beginning of the next there is a lot hanging in the air.</p>
+
+<p>If you leave off, or attempt to navigate and backtrack the text by paragraph (as is the frigging point of having paragraphs) you either start reading character description, about Person_B with no idea why he was playing a role in the story, or you start wondering why Person A trailed off. Conversely, if you time your preaks in reading between sections (as is also the purpuse of sections) you always end in the unsatisfying note of the last thiung being said making no sense yet.</p>
+
+<p>When_I read a non fiction book, it is usually in smaller chunks, while fiction is often better suited for longer stretches. When read in a stretch these split references add some narrative tension (by momentarily loading up the reader&rsquo;s short term memory with unresolved details), but given a pattern of reading in bits in pieces I found the split references to impede my understanding, always forcing me to back track from that I thought looked like the start of a section. When, it felt like you might on reading this:</p>
+
+<p>Let me try and find some examples rather than being all abstract.:</p>
+
+<p>I could also embed these quotes amid the stream of this text, to simulate taking a break from the writing&hellip;.</p>
+
+<p>As you started the previous paragraph, you probably got a strong sense that you were forgetting something._This may have forced you to go back to the previous block quote, to recall the details of the ideas left</p>
+
+<p>These two books employed this tic in different ways. <em>Sons of the Profits</em> had more or less freestanding chapters, but employed a bridging reference between damn near every subsection, like this. This made it annoyingly hard to find places to break, and correspindingly, hard to recover one&rsquo;s place on resuming (for which one needs to locate enough context to get short one&rsquo;s short term memory loaded.)</p>
+
+<p><em>Turing&rsquo;s  Cathedral</em> committed the opposite offense: each <em>chapter</em> ended with an unresolved reference to a person in the following chapter. An example follows.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/08/16/replace-less-with-emacs/">Replace Less With Emacs</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-08-16T12:31:20-07:00" pubdate data-updated="true">2014-08-16</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I use shell-mode in Emacs a lot (and have never been that taken with Eshell or term-mode). I got tired of seeing this sort of thing:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>dekkera:htlatex-maximal peter$ git log
+</span><span class='line'>WARNING: terminal is not fully functional
+</span><span class='line'>-  (press RETURN)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It&rsquo;s reasonable for commands that generate a lot of output to go through <code>less</code>, but <code>less</code> works poorly in an Emacs buffer.</p>
+
+<p>However, Emacs itself is quite good at paging. So I wondered if I could make Emacs take over for <code>less</code>. I wrote this shell script <code>emacs-pager</code> and placed it on my <code>$PATH</code>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/bin/bash
+</span><span class='line'>#A script for $PAGER that redirects to an Emacs buffer
+</span><span class='line'>
+</span><span class='line'># get the command line whose output I am paging
+</span><span class='line'>COMMAND=$(echo "$(ps -o 'command=' -p $(ps -o 'ppid=' $$))" | sed -e 's/["\\]/\\&/g' -e 's/["\\]/\\&/g')
+</span><span class='line'>
+</span><span class='line'># make a named fifo
+</span><span class='line'>FIFO=$(mktemp -ut pager.$$)
+</span><span class='line'>mkfifo $FIFO
+</span><span class='line'>
+</span><span class='line'># tell emacs to to read that fifo into a buffer
+</span><span class='line'>read -d '' LISP &lt;&lt;EOF
+</span><span class='line'>(let* ((buf (generate-new-buffer "*${COMMAND}*"))
+</span><span class='line'>       (proc (start-process "PAGER" buf "cat" "$FIFO")))
+</span><span class='line'>   (view-buffer buf 'kill-buffer)
+</span><span class='line'>   ; make sure point stays at top of window while process output accumulates
+</span><span class='line'>   (set-process-filter proc
+</span><span class='line'>     (lambda (proc string)
+</span><span class='line'>       (let ((buf (process-buffer proc))
+</span><span class='line'>             (mark (process-mark proc)))
+</span><span class='line'>       (with-current-buffer buf
+</span><span class='line'>         (let ((buffer-read-only nil))
+</span><span class='line'>           (save-excursion
+</span><span class='line'>             (goto-char mark)
+</span><span class='line'>             (insert string)
+</span><span class='line'>             (ansi-color-apply-on-region mark (point))
+</span><span class='line'>             ; TODO also support backspace overstriking
+</span><span class='line'>             (set-marker mark (point)))))))))
+</span><span class='line'>EOF
+</span><span class='line'>
+</span><span class='line'># echo "$LISP"
+</span><span class='line'>
+</span><span class='line'>emacsclient -e "$LISP"
+</span><span class='line'>
+</span><span class='line'>cat &gt; "$FIFO"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then I made sure the following was in my <code>init.el</code>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(server-start)
+</span><span class='line'>(unless (getenv "TERM_PROGRAM")
+</span><span class='line'>  (setenv "TERM" "xterm"))
+</span><span class='line'>(setenv "PAGER" "emacs-pager")</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now when I invoke <code>git log</code> or <code>man</code>, the output appears in a new paging buffer.</p>
+
+<ul>
+<li>Note use of &ldquo;ps&rdquo; to figure out what to call the buffer.</li>
+<li>Note use of <code>printf '%q'</code> to double escape the string that is substituted into Lisp code. (Why did I need double escaping? Shell scripting is terrible is why.)</li>
+<li>The <code>'kill-buffer</code> means that the paging buffer will be deleted when you press &ldquo;q&rdquo;. This is not standard Emacs behavior but I don&rsquo;t want a whole gaggle of temporary buffers laying around.</li>
+<li>The process filter is there just to keep point at the top of the buffer as you receive input.</li>
+<li>There was a weird interaction with Emacs&#8217; builtin <code>M-x man</code> command. I worked around it with:</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(defadvice man (around reset-pager activate)
+</span><span class='line'>  "reset PAGER to `less' when getting man pages."
+</span><span class='line'>  (let ((old (getenv "PAGER")))
+</span><span class='line'>    (setenv "PAGER" "less")
+</span><span class='line'>    ad-do-it
+</span><span class='line'>    (setenv "PAGER" old)))</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>There is a further problem when running <code>man</code> from the shell, in that <code>man</code> outputs backspace codes for bold/underline and so on. (TODO)</li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/07/25/hevea/">Hevea</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-07-25T14:55:01-07:00" pubdate data-updated="true">2014-07-25</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>So I wrote a thesis, using some self-torturing chain of LyX, <a href="http://yihui.name/knitr/">knitr</a>, and a build tool of my own devising. It made a PDF, now I want to make it a webpage.</p>
+
+<p>I tried a few tools, and settled on <a href="http://hevea.inria.fr/">HeVeA</a> as the tool that showed the most promise (as in, &lsquo;it actually generated some HTML for a subset of my files, within a few hours of work&rsquo;). That&rsquo;s not close to &ldquo;working&rdquo; though.</p>
+
+<p>Currently, I&rsquo;m having a problem where a <code>\ref{}</code> is processed correctly by LaTeX, producing a link labeled &ldquo;Figure x&rdquo;, but incorrectly by Hevea, including the entire caption, like so:</p>
+
+<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | &ldquo;title text&rdquo; [&ldquo;alt text&rdquo;]] %}</p>
+
+<p>Disabling the <code>hyperref</code> and <code>refstyle</code> packages didn&rsquo;t do much. I seem to remember also having this problem when using a <code>ref{}</code> to another figure inside of a figure caption but I am not sure how that was resolved.</p>
+
+<p>This is one problem with LaTeX projects, they become hard to troubleshoot. For any two things you want to do in LaTeX, there are four packages offering each, for 16 combinations, each of which will be grossly or subtly incompatible in some way.</p>
+
+<p>In this case, something somewhere is fucking with the generation of reference labels or something. The actual HTML looks like:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;#mov%3Auncrowded&quot;</span><span class="nt">&gt;</span>2.1(demo_circle_6.mov) An example
+</span><span class='line'>motion stimulus similar to those used in my experiments. There are six
+</span><span class='line'>elements, with the carrier motion clockwise and the envelope
+</span><span class='line'>counterclockwise. The envelope motion dominates the subjective
+</span><span class='line'>appearance. figure.caption.2<span class="nt">&lt;/a&gt;</span> shows six elements, so the spacing
+</span><span class='line'>between elements
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>which was constructed from this TeX:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>\ref{mov:uncrowded} shows six elements, so the spacing between elements
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, part of the fuckup is with hyperref? maybe? Next I need to try constructing a minimal example. Luckily I have a minimal example already&hellip;.</p>
+
+<h3>Some time later</h3>
+
+<p>OK so, turns out the inclusion of figure captions in labels was caused by an ill-thought-out line I had written in <code>trouble.hva</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>\renewcommand{\AtBeginDocument}[1]{}
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I had written this to &ldquo;prevent&rdquo; an error that was occurring when <code>hevea</code> was  reading the <code>.aux</code> file, but it also screwed up hyperref. It seems I can&rsquo;t get hyperref to work with hevea, and cleveref.</p>
+
+<h3>Giving up</h3>
+
+<p>After constructing a minimal example, I still couldn&rsquo;t identify a way to make autoref/cleverref references work.</p>
+
+<h2>Tex4ht</h2>
+
+<p>Someone suggested that <code>tex4ht</code> might work better than <code>hevea</code>, and at least it correctly processed my minimal example. That doen&rsquo;t mean it&rsquo;ll process the the whole thesis, though.</p>
+
+<p>The first problem is:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>--- warning --- Can&#39;t find/open file `introduction_chapter.dvi&#39;
+</span><span class='line'>--- error --- Can&#39;t find/open file `introduction_chapter.dvi&#39;
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Which was because I was using <code>tex4ht</code> and not <code>htlatex</code>. Using <code>htlatex</code> I instead get:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>! I can&#39;t find file `introduction_chapter.html&#39;.
+</span><span class='line'><span class="nt">&lt;to</span> <span class="na">be</span> <span class="na">read</span> <span class="na">again</span><span class="nt">&gt;</span>
+</span><span class='line'>                   \relax
+</span><span class='line'>l.79 \begin{document}
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Which is odd since that command is actually supposed to be making the file!</p>
+
+<p>So it must be failing at an earlier stage?</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -294,734 +891,6 @@
 
     </article>
   
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-05-05T18:14:41-07:00" pubdate data-updated="true">2014-05-05</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Now IN THEORY, Distel-mode is supposed to show me the online help when I point by cursor at a function name and press <code>C-c C-d h</code>. What I actually get is:</p>
-
-<p>I am unable to Google up a description of how to let Distel know where the HTML documentaiton is (as I installed Erlang from Homebrew, I find the HTML docs under <code>/usr/local/Cellar/erlang/17.0/share/doc/erlang/doc/</code>.)</p>
-
-<p>Now looking in what <code>distel.el</code> actually does with a <code>C-c C-d h</code> I find that Distel contains a module <code>otp_doc</code> which is a singleton <code>gen_server</code>&hellip; so I go to an erlang shell on that node and type</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)3&gt; whereis(otp_doc).
-</span><span class='line'>&lt;0.44.0&gt;</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now I also saw that the <code>otp_doc</code> module had a property list as the init of its <code>gen_server</code> state. The state contained a <code>root_dir</code> variable. The root_dir variable is initialized to a default of <code>code:root_dir()</code>, which is currently set to:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)4&gt; code:root_dir().
-</span><span class='line'>"/usr/local/Cellar/erlang/17.0/lib/erlang"</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Aping Distel and calling otp_doc does:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)9&gt; otp_doc:distel(link, "orddict", "find", 2).
-</span><span class='line'>no_html</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Meanwhile, another Distel function <code>C-c C-d A</code> which is bound to <code>erl-show-arglist</code>  works fine when pressed ad <code>orddict:find|</code>. And <code>C-c C-d d</code> also comes up with useful information &mdash; but this information doesn&rsquo;t look like /documentation/.</p>
-
-<p>From Emacs. <code>C-c C-d h</code> does <code>(erl-do-find-doc 'link 'point 'code</code>root_dir 0)`,</p>
-
-<p>And it looks like <code>init()</code> calls <code>index_html()</code> the <code>no_html</code> is coming from <code>init()</code> I guess. Here&rsquo;s how:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>html_index(file,Dir) -&gt;
-</span><span class='line'>  FN = filename:join([Dir,"doc","man_index.html"]),
-</span><span class='line'>  fold_file(curry(fun lines/3,Dir),[],FN).</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So do I need to set root_dir to <code>/usr/local/Cellar/erlang/17.0/share/erlang</code>? Or alter how otp_doc is being initialized? Looks like it is accessed through <code>otp_doc:start</code>.</p>
-
-<p>So how to provide the start state from Emacs?</p>
-
-<p>I can&rsquo;t find where this value is configured, anywhere.</p>
-
-<p>So I just crapped out and made a symlink:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>dekkera:lib peter$ cd /usr/local/Cellar/erlang/17.0/lib/erlang
-</span><span class='line'>dekkera:lib peter$ ln -s ../../share/doc/erlang/doc doc</span></code></pre></td></tr></table></div></figure>
-
-
-<p>This got rid of no_html error but I still don&rsquo;t find any HTML documentation! What the hell.  I&rsquo;ll have to see why it&rsquo;s not reading the HTML file and populating the ETS database, or something.</p>
-
-<p>This is more debugging of Erlang than I can handle when all I&rsquo;m trying to do is write Erlang code. Argh.</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/28/un-pause-programs-in-os-x/">Un-pause Programs in OS X</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-28T12:43:01-07:00" pubdate data-updated="true">2014-04-28</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>I&rsquo;m not sure why there isn&rsquo;t a builtin way to do this. When a process eats all memory on OS X, it starts &ldquo;pausing&rdquo; applications. Upon killing the offending app, one wants to un-pause all the apps. But if you close the dialog, you can&rsquo;t resume!</p>
-
-<p>I can &ldquo;resume&rdquo; like this:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>pgrep Chrome | xargs kill -CONT</span></code></pre></td></tr></table></div></figure>
-
-
-<p>which appears to make the apps usable again but the processes still show up as &ldquo;paused&rdquo; in the force quit dialog. Also, I think the unpausing should respect the process tree (not process names.)</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/26/actually-create-a-bootable-linux-usb-key-for-mac/">Actually Create a Bootable Linux USB Key for Mac</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-26T12:32:28-07:00" pubdate data-updated="true">2014-04-26</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>I wanted to install Linux on a partition on an older (2008) Macbook Pro. It has no working CD drive. In fact having no CD drive is an accelerating trend these days.</p>
-
-<p>Now the Ubuntu site has <a href="http://www.ubuntu.com/download/desktop/create-a-usb-stick-on-mac-osx">instructions</a> for making a bootable USB stick. These instructions don&rsquo;t work on my machine. Nonetheless [contrary to some reports], it is completely possible to boot EFI machines off a USB stick. For example, just imaging the OS X installer DVD to a USB key using Disk Utility results in a bootable key. So something is not right with the Ubuntu image or instructions.</p>
-
-<p><a href="http://sevenbits.github.io/Mac-Linux-USB-Loader/">this did not work</a>
-<a href="http://penguintosh.com/about/">this did not even run</a>
-<a href="http://tillmail.de/wordpress/436">this did not work at first either</a> (even the special boot loader)
-installing <a href="">rEFIt</a> gave no boot menu.</p>
-
-<p>So here are directions that actually work.</p>
-
-<p>Install rEFIt, but then I ran the <code>enable_always.sh</code> command, and I finally saw a boot menu on startup, and it detected the EFI file on the USB stick.</p>
-
-<p>However, the <code>bootX64.efi</code> file showed a &ldquo;not compatible&rdquo; error when I tried to boot it. Using the 32-bit bootIA32.efi worked, and got me into a GRUB prompt.</p>
-
-<p>From the GRUB prempt, I typed,</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ls
-</span><span class='line'>ls (hd0,msdos1)
-</span><span class='line'>ls (hd0,msdos1)/efi/boot
-</span><span class='line'>ls (hd0,msdos1)/efi/boot/&lt;name of my .iso&gt;
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Er, no, it looks like I can&rsquo;t actually make this boot an .iso image from the command line. (and the other &ldquo;Linux USB Creator&rdquo; apps installed boot.efi files that gave &ldquo;unsupported&rdquo; errors. So the thing to do is to extract the contents of the .iso and see if GRUB works that way.</p>
-
-<p>Is it possible to create a bootable Linux key without rEFIt on the main drive? Maybe by putting rEFIt in the key. Not sure though.</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/16/compiling-a-raspberry-pi-kernel-via-ubuntu/">Compiling a Raspberry Pi Kernel via Ubuntu</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-16T12:42:41-07:00" pubdate data-updated="true">2014-04-16</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p><a href="2014-04-15-compiling-a-raspberry-pi-kernel-on-osx">Previously</a>, I set up a crosstools-NG build environment on OSX and then tried to compile a kernel. The kernel compilation process was a bit much to adjust to. Easier to just install Ubuntu in a VirtualBox image and do compilation there.</p>
-
-<p>After installing Ubuntu on the image, I did (mostly via <a href="http://raspberrypi.stackexchange.com/questions/192/how-do-i-cross-compile-the-kernel-on-a-ubuntu-host">this stackexchange answer</a>):</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>sudo apt-get install git ncurses-dev make gcc-arm-linux-gnueabi</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>git clone https://github.com/petli/linux.git -b rpi-3.10-usb-sound-backport raspi-linux</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cd raspi-linux
-</span><span class='line'>ssh pi@raspberrypi.local zcat /proc/config.gz &gt; .config</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Note that I had to set VirtualBox to &ldquo;bridged adapter&rdquo; mode in order to see the &lsquo;local&rsquo; devices on the network.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- oldconfig</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- menuconfig</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- -j8
-</span><span class='line'>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- modules -j8</span></code></pre></td></tr></table></div></figure>
-
-
-<p>NB. I configured VirtualBox to see as 8 cores for <code>-jN</code> to produce a speedup.</p>
-
-<p>That&hellip;. was straightforward.</p>
-
-<p>Now to install it on the Pi. I&rsquo;ll just take my SD card and mount it on the Ubuntu host for this. This required installing the VirtualBox Extension Pack. And using a USB SD card reader since I couldn&rsquo;t figure out how to work the Mac&rsquo;s builtin reader in VirtualBox.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>mv /media/BOOT/kernel.img /media/BOOT/kernel_old.img
-</span><span class='line'>cp arch/arm/boot/Image /media/BOOT/kernel.img
-</span><span class='line'>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi-  INSTALL_MOD_PATH=~/modules modules_install
-</span><span class='line'>sudo cp -r ~/modules/lib/* /media/root/lib/</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Upon booting I got some errors about &ldquo;<code>disagrees about version of symbol module_layout</code>&rdquo;. This made no sense, as modinfo showed the same version as <code>uname -a</code>, but then I added <code>gcc</code> to the <code>make-modules-install</code> option (this had previously ended in &ldquo;<code>-</code>&rdquo; like I would have expected), and made sure all modules were owned and writable only by root. That combination appeared to work (I was less than scientific in doing both at once.)</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/16/compiling-a-raspberry-pi-kernel-via-ubuntu/">Compiling a Raspberry Pi Kernel via Ubuntu</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-16T00:00:00-07:00" pubdate data-updated="true"></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><table>
-<tbody>
-<tr class="odd">
-<td align="left">layout: post</td>
-</tr>
-<tr class="even">
-<td align="left">title: &quot;Compiling a Raspberry Pi Kernel via Ubuntu&quot;</td>
-</tr>
-<tr class="odd">
-<td align="left">date: 2014-04-16 12:42:41 -0700</td>
-</tr>
-<tr class="even">
-<td align="left">comments: true</td>
-</tr>
-<tr class="odd">
-<td align="left">categories:</td>
-</tr>
-</tbody>
-</table>
-<p><a href="2014-04-15-compiling-a-raspberry-pi-kernel-on-osx">Previously</a>, I set up a crosstools-NG build environment on OSX and then tried to compile a kernel. The kernel compilation process was a bit much to adjust to. Easier to just install Ubuntu in a VirtualBox image and do compilation there.</p>
-<p>After installing Ubuntu on the image, I did (mostly via <a href="http://raspberrypi.stackexchange.com/questions/192/how-do-i-cross-compile-the-kernel-on-a-ubuntu-host">this stackexchange answer</a>):</p>
-<pre><code>sudo apt-get install git ncurses-dev make gcc-arm-linux-gnueabi</code></pre>
-<pre><code>git clone https://github.com/petli/linux.git -b rpi-3.10-usb-sound-backport raspi-linux</code></pre>
-<pre><code>cd raspi-linux
-ssh pi@raspberrypi.local zcat /proc/config.gz &gt; .config</code></pre>
-<p>Note that I had to set VirtualBox to &quot;bridged adapter&quot; mode in order to see the &#8216;local&#8217; devices on the network.</p>
-<pre><code>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- oldconfig</code></pre>
-<pre><code>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- menuconfig</code></pre>
-<pre><code>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- -j8
-make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- modules -j8</code></pre>
-<p>NB. I configured VirtualBox to see as 8 cores for <code>-jN</code> to produce a speedup.</p>
-<p>That&#8230;. was straightforward.</p>
-<p>Now to install it on the Pi. I&#8217;ll just take my SD card and mount it on the Ubuntu host for this. This required installing the VirtualBox Extension Pack. And using a USB SD card reader since I couldn&#8217;t figure out how to work the Mac&#8217;s builtin reader in VirtualBox.</p>
-<pre><code>mv /media/BOOT/kernel.img /media/BOOT/kernel_old.img
-cp arch/arm/boot/Image /media/BOOT/kernel.img
-make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi-  INSTALL_MOD_PATH=~/modules modules_install
-sudo cp -r ~/modules/lib/* /media/root/lib/</code></pre>
-<p>Upon booting I got some errors about &quot;<code>disagrees about version of symbol module_layout</code>&quot;. This made no sense, as modinfo showed the same version as <code>uname -a</code>, but then I added <code>gcc</code> to the <code>make-modules-install</code> option (this had previously ended in &quot;<code>-</code>&quot; like I would have expected), and made sure all modules were owned and writable only by root. That combination appeared to work (I was less than scientific in doing both at once.)</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx/">(Not) Compiling a Raspberry Pi Kernel on OSX</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-15T00:53:35-07:00" pubdate data-updated="true">2014-04-15</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>One thing leads to another and suddenly you want to compile a new Raspberry Pi kernel, and your most convenient host is a Mac.</p>
-
-<p>I started with <a href="http://www.jaredwolff.com/blog/cross-compiling-on-mac-osx-for-raspberry-pi/">some existing notes</a> about this &mdash;  but I found they needed some tweaking and some updates have happened which make things a little easier.</p>
-
-<p>I&rsquo;m using crosstool-ng from Homebrew on OS X 10.9.</p>
-
-<h1>Instructions</h1>
-
-<h2>Install packages</h2>
-
-<p>These are the packages I needed from Homebrew.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>brew tap homebrew/versions
-</span><span class='line'>brew install gcc48
-</span><span class='line'>brew install crosstool-ng
-</span><span class='line'>brew tap homebrew/dupes
-</span><span class='line'>brew install grep
-</span><span class='line'>brew install gettext
-</span><span class='line'>brew link --force gettext
-</span><span class='line'>brew install ncurses
-</span><span class='line'>brew link --force ncurses</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Note that <code>link --force</code> is not a particularly nice thing to do, and will (e.g.) prevent you from reinstalling crosstool-ng without uninstalling gettext first. But it appears to be necessary, as eglibc build fails without it (and I don&rsquo;t understand if there&rsquo;s an option that will let me specity gettext&rsquo;s location to eglibc)</p>
-
-<h2>Make crosstools use GNU grep</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>chmod u+w /usr/local/Cellar/crosstool-ng/1.19.0/lib/ct-ng.1.19.0/paths.sh</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Edit <code>paths.sh</code>, changing the line about <code>grep</code> to read:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>export grep="/usr/local/bin/ggrep"</span></code></pre></td></tr></table></div></figure>
-
-
-<p>(Is there a user-level config way to do this w/o poking around in the Homebrew cellar?)</p>
-
-<h2>Create disk images</h2>
-
-<p>Crosstools needs case-sensitive file systems to work on, we&rsquo;ll create two images, one to compile in and one to host the binaries.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cd ~
-</span><span class='line'>mkdir xtools-images
-</span><span class='line'>cd xtools-images
-</span><span class='line'>hdiutil create -size 6g \
-</span><span class='line'>   -attach -type SPARSE -fs 'Case-sensitive Journaled HFS+' \
-</span><span class='line'>   -volname xtools-build-env xtools-build-env
-</span><span class='line'>hdiutil create -size 500m \
-</span><span class='line'>   -attach -type SPARSE -fs 'Case-sensitive Journaled HFS+' \
-</span><span class='line'>   -volname xtools xtools</span></code></pre></td></tr></table></div></figure>
-
-
-<h2>Set up crosstools-ng</h2>
-
-<p>Thanks to <a href="https://github.com/Kentzo/armv6-rpi-linux-gnueabihf">Kentzo</a> there is a Raspberry Pi configuration already in <code>crosstools-ng</code> in Homebrew, and there only need minor adjustments.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cd /Volumes/xtools-build-env/
-</span><span class='line'>ct-ng armv6-rpi-linux-gnueabi</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now extract this repository onto the drive image. It contains a <code>.config</code> file and a couple of patches.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>git clone homeGit/peter/raspberry-pi-osx-crosstools-config .</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Then inspect the configuration:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ct-ng menuconfig</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Check that all the paths under &ldquo;Paths&rdquo; point to somewhere logical (mounted on your disk images)</p>
-
-<p>For extra speed, set &ldquo;Paths::Build behavior::number of parallel jobs&rdquo; to twice your number of cores. This also means you will need to also up the <code>ulimit</code> before building. (If there are weird errors about no rules to make targets related to language localization, you probably forgot to do this.) So now do</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>ulimit -n 1024
-</span><span class='line'>ct-ng build</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Hopefully this will work.</p>
-
-<h2>Test the compiler</h2>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cat &gt; test.c
-</span><span class='line'>#include &lt;stdio.h&gt;
-</span><span class='line'>int main() { printf("Hello, world!\n"); return 0; }</span></code></pre></td></tr></table></div></figure>
-
-
-<p>(press ctrl-d to finish)</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-gcc -o test test.c</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Copy <code>test</code> over to your RPi and try running it.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>scp test pi@raspberrypi.local:
-</span><span class='line'>ssh pi@raspberrypi.local /home/pi/test</span></code></pre></td></tr></table></div></figure>
-
-
-<h1>Compiling a Kernel</h1>
-
-<p>Well this is what I signed up for.</p>
-
-<p>I wanted to build the kernel described <a href="https://github.com/petli/linux/tree/rpi-3.10-usb-sound-backport">here</a>.</p>
-
-<p>I&rsquo;m cribbing from <a href="http://akanto.wordpress.com/2012/09/25/cross-compiling-kernel-for-raspberry-pi-on-fedora-17-part-1/">these</a> notes.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>cd /Volumes/xtools-build-env/
-</span><span class='line'>git clone https://github.com/petli/linux.git -b rpi-3.10-usb-sound-backport</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Copy the existing config.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>scp pi@raspberrypi.local:/proc/config.gz ./linux-config.gz
-</span><span class='line'>gunzip linux-config.gz
-</span><span class='line'>cp linux-config linux/.config</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- oldconfig</span></code></pre></td></tr></table></div></figure>
-
-
-<p><code>menuconfig</code> doersn&rsquo;t work for me because of some <code>ncurses</code> problem but there is <code>make nconfig</code></p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig</span></code></pre></td></tr></table></div></figure>
-
-
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now it is complaining about lack of &ldquo;elf.h&rdquo; Where is it looking for elf.h?</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>sudo cp ../elf.h ../elftypes.h /usr/include
-</span><span class='line'> 
-</span><span class='line'>brew install libelf
-</span><span class='line'>sudo ln -s /usr/local/include/libelf /usr/include/libelf</span></code></pre></td></tr></table></div></figure>
-
-
-<p>&hellip; and some other advice from the internet, which didn&rsquo;t work either. It&rsquo;s not the &lsquo;echo&rsquo; problem, as that&rsquo;s been long fixed.</p>
-
-<h1>Giving up threshold reached</h1>
-
-<p>&hellip;. oh but adjusting Linux enough to compile in an OSX environment is going to be bad. gonna investigate just installing an Ubuntu VM under VirtualBox and compiling there</p>
-
-<p>honestly a kernel compile on the Pi itself would have finished by now</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx/">Compiling a Raspberry Pi Kernel on Osx</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-04-15T00:00:00-07:00" pubdate data-updated="true"></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><table>
-<tbody>
-<tr class="odd">
-<td align="left">layout: post</td>
-</tr>
-<tr class="even">
-<td align="left">title: &quot;(not) Compiling a Raspberry Pi kernel on OSX&quot;</td>
-</tr>
-<tr class="odd">
-<td align="left">date: 2014-04-15 00:53:35 -0700</td>
-</tr>
-<tr class="even">
-<td align="left">comments: true</td>
-</tr>
-<tr class="odd">
-<td align="left">categories: technote failure</td>
-</tr>
-</tbody>
-</table>
-<p>One thing leads to another and suddenly you want to compile a new Raspberry Pi kernel, and your most convenient host is a Mac.</p>
-<p>I started with <a href="http://www.jaredwolff.com/blog/cross-compiling-on-mac-osx-for-raspberry-pi/">some existing notes</a> about this &#8211; but I found they needed some tweaking and some updates have happened which make things a little easier.</p>
-<p>I&#8217;m using crosstool-ng from Homebrew on OS X 10.9.</p>
-<h1 id="instructions">Instructions</h1>
-<h2 id="install-packages">Install packages</h2>
-<p>These are the packages I needed from Homebrew.</p>
-<pre><code>brew tap homebrew/versions
-brew install gcc48
-brew install crosstool-ng
-brew tap homebrew/dupes
-brew install grep
-brew install gettext
-brew link --force gettext
-brew install ncurses
-brew link --force ncurses</code></pre>
-<p>Note that <code>link --force</code> is not a particularly nice thing to do, and will (e.g.) prevent you from reinstalling crosstool-ng without uninstalling gettext first. But it appears to be necessary, as eglibc build fails without it (and I don&#8217;t understand if there&#8217;s an option that will let me specity gettext&#8217;s location to eglibc)</p>
-<h2 id="make-crosstools-use-gnu-grep">Make crosstools use GNU grep</h2>
-<pre><code>chmod u+w /usr/local/Cellar/crosstool-ng/1.19.0/lib/ct-ng.1.19.0/paths.sh</code></pre>
-<p>Edit <code>paths.sh</code>, changing the line about <code>grep</code> to read:</p>
-<pre><code>export grep=&quot;/usr/local/bin/ggrep&quot;</code></pre>
-<p>(Is there a user-level config way to do this w/o poking around in the Homebrew cellar?)</p>
-<h2 id="create-disk-images">Create disk images</h2>
-<p>Crosstools needs case-sensitive file systems to work on, we&#8217;ll create two images, one to compile in and one to host the binaries.</p>
-<pre><code>cd ~
-mkdir xtools-images
-cd xtools-images
-hdiutil create -size 6g \
-   -attach -type SPARSE -fs &#39;Case-sensitive Journaled HFS+&#39; \
-   -volname xtools-build-env xtools-build-env
-hdiutil create -size 500m \
-   -attach -type SPARSE -fs &#39;Case-sensitive Journaled HFS+&#39; \
-   -volname xtools xtools</code></pre>
-<h2 id="set-up-crosstools-ng">Set up crosstools-ng</h2>
-<p>Thanks to <a href="https://github.com/Kentzo/armv6-rpi-linux-gnueabihf">Kentzo</a> there is a Raspberry Pi configuration already in <code>crosstools-ng</code> in Homebrew, and there only need minor adjustments.</p>
-<pre><code>cd /Volumes/xtools-build-env/
-ct-ng armv6-rpi-linux-gnueabi</code></pre>
-<p>Now extract this repository onto the drive image. It contains a <code>.config</code> file and a couple of patches.</p>
-<pre><code>git clone homeGit/peter/raspberry-pi-osx-crosstools-config .</code></pre>
-<p>Then inspect the configuration:</p>
-<pre><code>ct-ng menuconfig</code></pre>
-<p>Check that all the paths under &quot;Paths&quot; point to somewhere logical (mounted on your disk images)</p>
-<p>For extra speed, set &quot;Paths::Build behavior::number of parallel jobs&quot; to twice your number of cores. This also means you will need to also up the <code>ulimit</code> before building. (If there are weird errors about no rules to make targets related to language localization, you probably forgot to do this.) So now do</p>
-<pre><code>ulimit -n 1024
-ct-ng build</code></pre>
-<p>Hopefully this will work.</p>
-<h2 id="test-the-compiler">Test the compiler</h2>
-<pre><code>cat &gt; test.c
-#include &lt;stdio.h&gt;
-int main() { printf(&quot;Hello, world!\n&quot;); return 0; }</code></pre>
-<p>(press ctrl-d to finish)</p>
-<pre><code>/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-gcc -o test test.c</code></pre>
-<p>Copy <code>test</code> over to your RPi and try running it.</p>
-<pre><code>scp test pi@raspberrypi.local:
-ssh pi@raspberrypi.local /home/pi/test</code></pre>
-<h1 id="compiling-a-kernel">Compiling a Kernel</h1>
-<p>Well this is what I signed up for.</p>
-<p>I wanted to build the kernel described <a href="https://github.com/petli/linux/tree/rpi-3.10-usb-sound-backport">here</a>.</p>
-<p>I&#8217;m cribbing from <a href="http://akanto.wordpress.com/2012/09/25/cross-compiling-kernel-for-raspberry-pi-on-fedora-17-part-1/">these</a> notes.</p>
-<pre><code>cd /Volumes/xtools-build-env/
-git clone https://github.com/petli/linux.git -b rpi-3.10-usb-sound-backport</code></pre>
-<p>Copy the existing config.</p>
-<pre><code>scp pi@raspberrypi.local:/proc/config.gz ./linux-config.gz
-gunzip linux-config.gz
-cp linux-config linux/.config</code></pre>
-<pre><code>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- oldconfig</code></pre>
-<p><code>menuconfig</code> doersn&#8217;t work for me because of some <code>ncurses</code> problem but there is <code>make nconfig</code></p>
-<pre><code>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig</code></pre>
-<pre><code>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig</code></pre>
-<p>Now it is complaining about lack of &quot;elf.h&quot; Where is it looking for elf.h?</p>
-<pre><code>sudo cp ../elf.h ../elftypes.h /usr/include
- 
-brew install libelf
-sudo ln -s /usr/local/include/libelf /usr/include/libelf</code></pre>
-<p>&#8230; and some other advice from the internet, which didn&#8217;t work either. It&#8217;s not the &#8216;echo&#8217; problem, as that&#8217;s been long fixed.</p>
-<h1 id="giving-up-threshold-reached">Giving up threshold reached</h1>
-<p>&#8230;. oh but adjusting Linux enough to compile in an OSX environment is going to be bad. gonna investigate just installing an Ubuntu VM under VirtualBox and compiling there</p>
-<p>honestly a kernel compile on the Pi itself would have finished by now</p>
-</div>
-  
-  
-
-
-    </article>
-  
   <div class="pagination">
     
       <a class="prev" href="/blog/page/2/">&larr; Older</a>
@@ -1037,23 +906,23 @@ sudo ln -s /usr/local/include/libelf /usr/include/libelf</code></pre>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2014/05/21/itunes-library-manipulation-with-python/">iTunes Library Manipulation With Python</a>
+        <a href="/blog/2014/09/20/racket-and-flycheck-mode/">Racket and Flycheck-mode</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/05/19/whitespace-mode/">Whitespace-mode</a>
+        <a href="/blog/2014/09/09/fixing-geiser-racket-repls-error-links/">Fixing Geiser-racket-repl&#8217;s Error Links</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/05/15/time-shifting-an-internet-stream/">Time Shifting an Internet Stream With VLC</a>
+        <a href="/blog/2014/09/09/editing-regexes-interactively-in-emacs/">Editing Structured Regexes Interactively in Emacs</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</a>
+        <a href="/blog/2014/09/05/get-emacs-set-up-for-racket/">Get Emacs Set Up for Racket</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/04/28/un-pause-programs-in-os-x/">Un-pause Programs in OS X</a>
+        <a href="/blog/2014/08/23/a-strange-writing-tic/">A Strange Writing Tic</a>
       </li>
     
   </ul>

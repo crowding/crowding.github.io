@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Lisp | Illusory stillness]]></title>
+  <link href="http://crowding.github.io/blog/categories/lisp/atom.xml" rel="self"/>
+  <link href="http://crowding.github.io/"/>
+  <updated>2014-09-23T22:48:32-07:00</updated>
+  <id>http://crowding.github.io/</id>
+  <author>
+    <name><![CDATA[Peter Meilstrup]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Editing Structured Regexes Interactively in Emacs]]></title>
+    <link href="http://crowding.github.io/blog/2014/09/09/editing-regexes-interactively-in-emacs/"/>
+    <updated>2014-09-09T15:50:44-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/09/09/editing-regexes-interactively-in-emacs</id>
+    <content type="html"><![CDATA[<p>I was using regex-builder to make something, but it still looked like this:</p>
+
+<p><code>
+"^ *\\([^:(\t\n]+\\)\\(:\\([0-9]+\\)\\)?\\(:\\([0-9]+\\)\\)?\\(: \\(\\(\\w\\|\\s_\\)+\\|\\[\\(\\w\\|\\s \\)+\\]\\)\\)?\\(: \\(.*\\)\\)?"
+</code></p>
+
+<p>Leaning-toothpicks syndrome is kicking my ass. What if I write a regex using S-expressions? Wouldn&rsquo;t that be the bee&rsquo;s knees?</p>
+
+<p>Well, one thing I can do use use the <code>rx</code> macro, but <code>re-builder</code> doesn&rsquo;t seem to want to work with it. I call <code>(reb-change-syntax)</code> to select &lsquo;rx&rsquo; but it only performs a search sometimes? And often finds no matches?</p>
+
+<p>Debugging from this impetus I get to stepping through <code>reb-update-overlays</code> but I can&rsquo;t inspect the value of local variables in either <code>edebug</code> or <code>debug</code> for some weird reason. (Because of <code>-*- lexical-binding:t -*-</code> in the file.)</p>
+
+<p>New yak frame: how to inspect vars in  lexically bound code? It&rsquo;s probably impossible, though there was an incomplete <a href="http://emacs.1067599.n5.nabble.com/Edebug-amp-lexical-scope-td202618.html">thread</a> about it a couple years ago.</p>
+
+<p>Well, I guess I&rsquo;ll debug it by adding messages.</p>
+
+<p>Now, I find that when I use <code>(rx (one-or-more "/"))</code>, that macro should expand to <code>"/+"</code> but but the regexp we search for is actually <code>"\\(?:/\\+\\)"</code> which doesn&rsquo;t look like a proper regex. What is <code>reb-target-binding</code> doing? Pulling the binding from the target buffer. What&rsquo;s <code>reb-cook-regexp</code> doing? Calling <code>rx-to-string</code> on the result of an <code>rx</code> macro. Which it shouldn&rsquo;t?</p>
+
+<p>Oh, I was typing
+<code>
+(rx (one-or-more ":"))
+</code>
+in the buffer like a sucker (idk, that&rsquo;s what you would write in Elisp?). Turns out I need to type</p>
+
+<p><code>
+'(one-or-more ":")
+</code></p>
+
+<p>So how do I do a longer regex????? Use <code>and</code>/<code>seq</code>. It should be called <code>progn</code>, shouldn&rsquo;t it? Turns out I should write in regexp-builder like</p>
+
+<p><code>
+'(seq (one-or-more ":") (class )
+</code></p>
+
+<p>So now I write regexps in regexp-builder like:</p>
+
+<p>```
+&lsquo;(seq bol (zero-or-more &ldquo; &rdquo;)</p>
+
+<pre><code>  (group (one-or-more (not (char ":\n\t"))))
+  (zero-or-one ":" (group (one-or-more digit)))
+  (zero-or-one ":" (group (one-or-more digit)))
+  (zero-or-one ": " (group (one-or-more (or (syntax word) (syntax symbol))))))
+</code></pre>
+
+<p>```</p>
+
+<p>and then paste the <code>(seq ...)</code> into an <code>(rx ...)</code> macro when I&rsquo;m done.</p>
+
+<p>Well, there&rsquo;s one more problem. Sometimes I can type a correct regexp and it won&rsquo;t update (it actually removes all highlights). Seems to have something to do with regexp-builder behaving inappropriately when an edit doesn&rsquo;t change the compiled form of the regexp. But I can then call <code>(reb-force-update)</code> and it does, that&rsquo;ll work for now.</p>
+]]></content>
+  </entry>
+  
+</feed>

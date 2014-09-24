@@ -93,14 +93,14 @@
 
 <div class="entry-content"><p>I wanted to install Linux on a partition on an older (2008) Macbook Pro. It has no working CD drive. In fact having no CD drive is an accelerating trend these days.</p>
 
-<p>Now the Ubuntu site has <a href="http://www.ubuntu.com/download/desktop/create-a-usb-stick-on-mac-osx">instructions</a> for making a bootable USB stick. These instructions don&rsquo;t work on my machine. Nonetheless [contrary to some reports], it is completely possible to boot EFI machines off a USB stick. For example, just imaging the OS X installer DVD to a USB key using Disk Utility results in a bootable key. So something is not right with the Ubuntu image or instructions.</p>
+<p>Now the Ubuntu site has <a href="http://www.ubuntu.com/download/desktop/create-a-usb-stick-on-mac-osx">instructions</a> for making a bootable USB stick. These instructions don&rsquo;t work on my machine. Nonetheless [contrary to some reports], it is completely possible to boot this machine off a USB stick. For example, just imaging the OS X installer DVD to a USB key using Disk Utility results in a bootable key. So something is not right with the Ubuntu image or instructions.</p>
 
 <p><a href="http://sevenbits.github.io/Mac-Linux-USB-Loader/">this did not work</a>
 <a href="http://penguintosh.com/about/">this did not even run</a>
 <a href="http://tillmail.de/wordpress/436">this did not work at first either</a> (even the special boot loader)
 installing <a href="">rEFIt</a> gave no boot menu.</p>
 
-<p>So here are directions that actually work.</p>
+<p>So here are directions that actually work. Or at least record my progress</p>
 
 <p>Install rEFIt, but then I ran the <code>enable_always.sh</code> command, and I finally saw a boot menu on startup, and it detected the EFI file on the USB stick.</p>
 
@@ -119,9 +119,43 @@ installing <a href="">rEFIt</a> gave no boot menu.</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Er, no, it looks like I can&rsquo;t actually make this boot an .iso image from the command line. (and the other &ldquo;Linux USB Creator&rdquo; apps installed boot.efi files that gave &ldquo;unsupported&rdquo; errors. So the thing to do is to extract the contents of the .iso and see if GRUB works that way.</p>
+<p>Er, no, it looks like I can&rsquo;t actually make GRUB boot an .iso image off a USB disk from the command line. It (and the other &ldquo;Linux USB Creator&rdquo; apps installed boot.efi files that gave &ldquo;unsupported&rdquo; errors. So the thing to do is to extract the contents of the .iso and see if GRUB works with that.</p>
 
-<p>Is it possible to create a bootable Linux key without rEFIt on the main drive? Maybe by putting rEFIt in the key. Not sure though.</p>
+<p>So:</p>
+
+<h2>New attempt</h2>
+
+<p>I tried to mount the ISO to copy off the filesystem, but ISO was of course an ext filesystem unsupported on OS X I tried briefly to mount the thing using FUSE but I don&rsquo;t know how to do an ISO that way. So I loaded up an Ubuntu VM under VirtualBox, and Ubuntu&rsquo;s Startup Disk Creator utility extracted the ISO to a FAT filesystem key for me (had to try a couple of different keys to find one that that didn&rsquo;t freeze the VM_on startup though)</p>
+
+<p>Booting Mounting this in the mac again, I found rEFIT was able to see the USB key. Also, the builtin startup menu saw the ket without need for rEFIt. But now I&rsquo;ve got an &ldquo;unsupported operation&rdquo; again when I actually try to boot the files. Closer though. So next I&rsquo;ll copy over the GRUB that (sort of worked)[<a href="http://tillmail.de/wordpress/436">http://tillmail.de/wordpress/436</a>] and</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>root (hd0,msdos1)
+</span><span class='line'>configfile /boot/grub/grub.config</span></code></pre></td></tr></table></div></figure>
+
+
+<p>got me into a GRUB menu. Any of the options past the menu led to a blank screen though. Crud.</p>
+
+<p>(eta: this may be due to the grub.config having references to <code>/cdrom</code> instead of the usb)</p>
+
+<p>I tried again with a Mint installer. Mint wouldn&rsquo;t even boot in VirtualBox so I made the Mint usbkey using Ubuntu&rsquo;s startup disk creator again.</p>
+
+<p>FINALLY, starting Mint in &ldquo;compatibility mode&rdquo; did something and I see Linux kernel messages. Seems to freeze after a while though, in the middle of something&hellip; and now I see that &ldquo;blank screen&rdquo; on startup really means &ldquo;kernel hasn&rsquo;t figured out the video&rdquo;</p>
+
+<p>What could I try next? Maybe install the live image as a partition? I think I&rsquo;m getting through the USB hurdle though?</p>
+
+<p>Next I tried &ldquo;unetbootin.&rdquo; Mac version was unresponsive so tried on Ubuntu virtualbox.</p>
+
+<p>Should also try starting with a 10.10 .iso. because apparently compatibility decreases over time.</p>
+
+<p>Okay, so booting using rEFIt as a &ldquo;legacy OS&rdquo; off of USB using the 10.10 ISO did not work. Nor did copying the contents of the USB stick to a new partition.</p>
+
+<p>Next I will try making a Mint ISO again with a different kernel?</p>
+
+<p>Or Debian &ldquo;Lenny&rdquo; since <a href="http://fieldeffect.info/w/MacBookProUSB">this person</a> seems to have had success&hellip;.</p>
+
+<h3>Failure threshold approaching</h3>
 </div>
 
 
@@ -185,23 +219,23 @@ installing <a href="">rEFIt</a> gave no boot menu.</p>
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2014/05/21/itunes-library-manipulation-with-python/">iTunes Library Manipulation With Python</a>
+        <a href="/blog/2014/09/20/racket-and-flycheck-mode/">Racket and Flycheck-mode</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/05/19/whitespace-mode/">Whitespace-mode</a>
+        <a href="/blog/2014/09/09/fixing-geiser-racket-repls-error-links/">Fixing Geiser-racket-repl's Error Links</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/05/15/time-shifting-an-internet-stream/">Time Shifting an Internet Stream With VLC</a>
+        <a href="/blog/2014/09/09/editing-regexes-interactively-in-emacs/">Editing Structured Regexes Interactively in Emacs</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</a>
+        <a href="/blog/2014/09/05/get-emacs-set-up-for-racket/">Get Emacs Set Up for Racket</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/04/28/un-pause-programs-in-os-x/">Un-pause Programs in OS X</a>
+        <a href="/blog/2014/08/23/a-strange-writing-tic/">A Strange Writing Tic</a>
       </li>
     
   </ul>

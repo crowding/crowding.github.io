@@ -1,0 +1,502 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Get Emacs Set Up for Racket - Illusory stillness</title>
+  <meta name="author" content="Peter Meilstrup">
+
+  
+  <meta name="description" content="I want to get back to doing problems out of SICP, but I want to use a more familiar editor. Racket suggests Geiser and Quack. I already have Geiser &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://crowding.github.io/blog/2014/09/05/get-emacs-set-up-for-racket">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Illusory stillness" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Illusory stillness</a></h1>
+  
+    <h2>mumble mumble techblog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:crowding.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Get Emacs Set Up for Racket</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-05T13:24:15-07:00" pubdate data-updated="true">2014-09-05</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>I want to get back to doing problems out of SICP, but I want to use a more familiar editor.</p>
+
+<p>Racket suggests Geiser and Quack. I already have Geiser installed from sopme package archive when I aborted an earlier attempt (and Geiser is supposed to, independently, include a version of Quack, or something?)</p>
+
+<!-- more -->
+
+
+<p>When I go to edit a .rkt file, I end up in Scheme-mode, defined in <code>scheme.el</code>. Is this Geiser? No &mdash; Geiser is the bit that interacts with the REPL, and it&rsquo;s not enabled.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(add-hook 'scheme-mode-hook 'geiser-mode)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Wait, the indicator for Geiser mode is that it says &ldquo;Racket/A&rdquo; in the modeline._Geiser is a minor-mode.</p>
+
+<p>So how do I start a Racket interpreter? <code>M-x run-geiser</code>. It asks me whether I want Racket or Guile. Despite what the manual claims, I can&rsquo;t make that a <em>default</em>. I can make it  <em>the only option</em> by saying there is no Guile to worry about.:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(setq geiser-active-implementations '(racket))</span></code></pre></td></tr></table></div></figure>
+
+
+<p>There appears to be no notion of &ldquo;use a default but allow you to select from options with a <code>C-u</code> prefix&rdquo; which would strike me as a more Emacsy way of doing it. ಠ_ಠ (And it also turns out you can do <code>M-x run-racket</code>.)</p>
+
+<p>Now, the REPL appears with this error:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Welcome to Racket v6.0.1.
+</span><span class='line'>/Users/peter/.emacs.d/elpa/geiser-0.5/scheme/racket/geiser/user.rkt:17:9: collection not found
+</span><span class='line'>  for module path: mzlib/thread
+</span><span class='line'>  collection: "mzlib"
+</span><span class='line'>  in collection directories:
+</span><span class='line'>   /Users/peter/Library/Racket/6.0.1/collects
+</span><span class='line'>   /usr/local/Cellar/plt-racket/6.0.1/share/racket/collects
+</span><span class='line'>   /Users/peter/.emacs.d/elpa/geiser-0.5/scheme/racket/
+</span><span class='line'>  context...:
+</span><span class='line'>   show-collection-err
+</span><span class='line'>   standard-module-name-resolver
+</span><span class='line'>   standard-module-name-resolver</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The first problem this points to is that it&rsquo;s running Racket out of Homebrew, not the mroe complete one I downloaded from the Racket website.</p>
+
+<p>It looks like one is expected to add /Applications/Racket/{bin,man}, etc to one&rsquo;s path(s). I did that in the form of a Homeshick module:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ homeshick generate plt-racket
+</span><span class='line'>$ homeshick cd plt-racket
+</span><span class='line'>$ mkdir home/.bashrc_includes
+</span><span class='line'>$ echo 'export PATH=/Applications/Racket\ v6.1/bin:$PATH' &gt; home/.bashrc_includes/racket.sh
+</span><span class='line'>$ homeshick link plt-racket</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Alternately, I think I could have done<code>$ raco pkg install compatibility-lib</code> to fix the error in Homebrew&rsquo;s Racket.</p>
+
+<p>Finally, I&rsquo;ll install racket-mode from ELPA.</p>
+
+<h3>How do I use this thing?</h3>
+
+<p>NowI need to learn the things that I already knew for other Emacs-based REPLS.</p>
+
+<ul>
+<li>How do I load a whole file into the Racket interpreter? <code>C-c C-b</code>?
+
+<ul>
+<li>(Gohd, how do I make keybindings for all the different flavors of Comint more consistent?)</li>
+</ul>
+</li>
+<li>How do I interactively send forms to the Racket interpreter? <code>C-x C-e</code>, same as Emacs lisp.</li>
+<li>How do I switch between more than one instance of Racket interpreter? Uhhhhhh&hellip;..</li>
+<li>&ldquo;Switching between modules&rdquo; seems important somehow. You do it with <code>C-c C-m</code> and <code>C-c C-a</code> in editing buffers.</li>
+<li><code>C-c C-z</code> for &ldquo;jump to REPL&rdquo;, <code>C-c C-a</code> for jump to REPL and switch module.</li>
+</ul>
+
+
+<h3>What about <code>#lang</code> directive?</h3>
+
+<p>Pressing <code>C-c C-b</code> in one of my SICP problem sets got me:</p>
+
+<pre><code>Error: retort-syntax
+
+UNKNOWN::862: read: #lang not enabled in the current context
+  context...:
+   /Applications/Racket v6.1/collects/racket/private/misc.rkt:87:7
+racket@&gt;
+
+Expression evaluated was:
+
+#lang planet neil/sicp
+</code></pre>
+
+<p>This means actually I should use <code>C-c C-a</code>. I knew modules sounded important! Note that this does&rsquo;t auto-save before loading, so I often give a <code>C-x C-s C-c C-a</code> sequence. I cut that out by making it autosave:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(define geiser-buffer-p ()
+</span><span class='line'>  "true if current buffer is a Geiser buffer"
+</span><span class='line'>  geiser-mode)
+</span><span class='line'>;
+</span><span class='line'>(defun geiser-repl-save-some-buffers-and-enter-module ()
+</span><span class='line'>  (interactive)
+</span><span class='line'>  (save-some-buffers t 'geiser-buffer-p)
+</span><span class='line'>  (geiser-mode-switch-to-repl-and-enter))
+</span><span class='line'>;
+</span><span class='line'>(define-key geiser-mode-map (kbd "C-c C-a")
+</span><span class='line'>  'geiser-repl-save-some-buffers-and-enter-module)</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Now how do I get autocompletion?</h3>
+
+<p>Something happens when I press Tab, so far so good.</p>
+
+<h3>And what about documentation!</h3>
+
+<p>Autodoc is enabled and it&rsquo;s like eldoc.
+<code>C-c C-d d</code> for jump to documentation for symbol at point
+<code>C-c C-d i</code> finds it in the Racket manual in your web browser.
+<code>C-c C-d m</code> lists the bindings in a module.</p>
+
+<p>Cool, this is looking like it will work.</p>
+
+<h3>And what about linting / flychecking?</h3>
+
+<p>I turn on flycheck mode? Haven&rsquo;t seen it do anything yet. Ah, there it goes. I want to make it more obtrusive (its error highlights are single characters often.)</p>
+
+<p>Also, as I edit code I&rsquo;m getting this annoyingly big message in the minibuffer:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Checker racket returned non-zero exit code 1, but no errors from output: r5rs:body: no expression in body
+</span><span class='line'>  in: (r5rs:body (define (new-record data) attach-tag data) (define (get-record name) (new-record data)) (define (get-salary record) (quote salary)))
+</span><span class='line'>  context...:
+</span><span class='line'>   /Applications/Racket v6.1/share/pkgs/r5rs-lib/r5rs/main.rkt:335:2
+</span><span class='line'>
+</span><span class='line'>Checker definition probably flawed.</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In other words, one kind of syntax error (no expression on body) is not getting interpreted as an &ldquo;error&rdquo;.</p>
+
+<p>Actually this particular syntax error (at least when writing code in the <code>#lang planet neil/sicp</code> module) is annoying because it won&rsquo;t point you to the line on which error occurs despite it being mostly syntax. Usually turns out to be an &lsquo;if&rsquo; with no clauses, a duplicated paren, or something.</p>
+
+<p>Additionally, the red underline that flycheck puts is misplaced and tiny (it is frequently on an open paren, when it should really be on all of the first sexp inside that paren).</p>
+
+<h3>How about autocomplete in the REPL for symbols defined in my module? How about eldoc for my own definitions?</h3>
+
+<p>This should be possible, right? I&rsquo;m getting &ldquo;end of file during parsing&rdquo; errors. I don&rsquo;t get it. But DrRacket was not autocompleting symbols defined in buffer either.</p>
+
+<p>Autocomplete in REPL does seem to work once I can successfully load the module.</p>
+
+<p>However, there appear to be situations in which the link between Geiser and Racket freezes up.</p>
+
+<h3>What does &ldquo;compile&rdquo; do?</h3>
+
+<p>As far as I can tell, <code>C-c C-k</code> on one of my SICP problemsets pops up a &ldquo;compile&rdquo; buffer with the following contents:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Compiling /Users/peter/sicp/chap2.4.rkt ...
+</span><span class='line'>
+</span><span class='line'>Error: retort-syntax
+</span><span class='line'>
+</span><span class='line'>(mcons (mcons 'result (mcons "#&lt;void&gt;" '())) (mcons (mcons 'output "") '()))
+</span><span class='line'>racket@chap2.4.rkt&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>&ldquo;Retort-syntax&rdquo;? WTH?</p>
+
+<h3>Navigating errors.</h3>
+
+<p><code>&lt;backtab&gt;</code>  and <tab> navigates errors in the buffer. <code>&lt;tab&gt;</code> also indents or autocompletes symbols. But <code>&lt;tab&gt;</code> from an empty prompt doesn&rsquo;t DWIM &ldquo;go to previous error, then preceding prompt, then next error&rdquo; from an empty prompt, which it should (then I could just tab to the most likely link I want to take, then <code>&lt;return&gt;</code> to follow it, two keystrokes.)</p>
+
+<p>The error links were not always working, and were ugly, so I <a href="2014-09-09-fixing-geiser-racket-repls-error-links.html">spent some time fixing them.</a></p>
+
+<p>This led to error links not actually navigating to the error when I pressed <code>&lt;return&gt;</code>, so I added this to restore that behavior:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(defun geiser-repl--follow-error-or-maybe-send ()
+</span><span class='line'>  (interactive)
+</span><span class='line'>  (if (get-text-property (point) 'compilation-message)
+</span><span class='line'>      (compile-goto-error)
+</span><span class='line'>      (geiser-repl--maybe-send)))
+</span><span class='line'>(define-key geiser-repl-mode-map (kbd "&lt;return&gt;")
+</span><span class='line'>  'geiser-repl--follow-error-or-maybe-send)</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Set the output syntax</h3>
+
+<p>The &ldquo;write&rdquo; output syntax puts &ldquo;mcons&rdquo; everywhere. In DrRacket, one can choose the &ldquo;write&rdquo; output style to elide the difference between mutable and immutable output cells. How does that work from the REPL? (Answered in <a href="http://stackoverflow.com/questions/25775600/change-output-printing-style-from-racket-repl/25777882?noredirect=1#comment40353857_25777882">Stack Overflow question</a>. How to do this automatically, haven&rsquo;t worked out yet.)</p>
+
+<h3>Improve error display</h3>
+
+<p>To what extent can Racket error output be customized? Sometimes it elides path names with &ldquo;<code>...</code>&rdquo; which is annoying. Other times it elides path names for good.</p>
+
+<h3>Weird issues</h3>
+
+<p>Occasionally in the Geiser REPL I will be unable to use <code>C-a</code> to go to back to the prompt, if point is at the end of buffer. What gives?</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Peter Meilstrup</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-05T13:24:15-07:00" pubdate data-updated="true">2014-09-05</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/emacs/'>emacs</a>, <a class='category' href='/blog/categories/racket/'>racket</a>, <a class='category' href='/blog/categories/technote/'>technote</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://crowding.github.io/blog/2014/09/05/get-emacs-set-up-for-racket/" data-via="perisaccadic" data-counturl="http://crowding.github.io/blog/2014/09/05/get-emacs-set-up-for-racket/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/08/23/a-strange-writing-tic/" title="Previous Post: A strange writing tic">&laquo; A strange writing tic</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/09/09/editing-regexes-interactively-in-emacs/" title="Next Post: Editing structured regexes interactively in Emacs">Editing structured regexes interactively in Emacs &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/09/20/racket-and-flycheck-mode/">Racket and Flycheck-mode</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/09/fixing-geiser-racket-repls-error-links/">Fixing Geiser-racket-repl's Error Links</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/09/editing-regexes-interactively-in-emacs/">Editing Structured Regexes Interactively in Emacs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/05/get-emacs-set-up-for-racket/">Get Emacs Set Up for Racket</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/23/a-strange-writing-tic/">A Strange Writing Tic</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/crowding">@crowding</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'crowding',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>My Pinboard</h1>
+  <ul id="pinboard_linkroll">Fetching linkroll...</ul>
+  <p><a href="http://pinboard.in/u:crowding">My Pinboard Bookmarks &raquo;</a></p>
+</section>
+<script type="text/javascript">
+  var linkroll = 'pinboard_linkroll'; //id target for pinboard list
+  var pinboard_user = "crowding"; //id target for pinboard list
+  var pinboard_count = 3; //id target for pinboard list
+  (function(){
+    var pinboardInit = document.createElement('script');
+    pinboardInit.type = 'text/javascript';
+    pinboardInit.async = true;
+    pinboardInit.src = '/javascripts/pinboard.js';
+    document.getElementsByTagName('head')[0].appendChild(pinboardInit);
+  })();
+</script>
+
+
+<section class="twitter">
+  <a class="twitter-timeline" href="https://twitter.com/perisaccadic" data-widget-id="448287882478764032">Tweets by @perisaccadic</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Peter Meilstrup -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

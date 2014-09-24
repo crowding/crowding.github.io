@@ -1,0 +1,311 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Racket and Flycheck-mode - Illusory stillness</title>
+  <meta name="author" content="Peter Meilstrup">
+
+  
+  <meta name="description" content="From earlier, I had the following complaints about flycheck: As I edit code I&rsquo;m getting this annoyingly big message in the minibuffer: &#8220 &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://crowding.github.io/blog/2014/09/20/racket-and-flycheck-mode">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Illusory stillness" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Illusory stillness</a></h1>
+  
+    <h2>mumble mumble techblog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:crowding.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Racket and Flycheck-mode</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-20T16:26:23-07:00" pubdate data-updated="true">2014-09-20</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>From <a href="{*post-url%202014-09-05-get-emacs-set-up-for-racket.markdown*}">earlier</a>, I had the following complaints about flycheck:</p>
+
+<blockquote><p>As I edit code I&rsquo;m getting this annoyingly big message in the minibuffer:</p>
+
+<p>&#8220;`
+Checker racket returned non-zero exit code 1, but no errors from output: r5rs:body: no expression in body
+  in: (r5rs:body (define (new-record data) attach-tag data) (define (get-record name) (new-record data)) (define (get-salary record) (quote salary)))
+  context&hellip;:
+   /Applications/Racket v6.1/share/pkgs/r5rs-lib/r5rs/main.rkt:335:2</p>
+
+<p>Checker definition probably flawed.
+&#8220;`</p>
+
+<p>In other words, one kind of syntax error (no expression on body) is not getting interpreted as an &ldquo;error&rdquo;.</p></blockquote>
+
+<p>To fix this, I need to fix the error patterns that Racket checker uses, to make it catch a certain error as an error.</p>
+
+<p>Now, what is some example output from the racket compiler? I ran <code>M-! racket -f chap3.1.rkt</code> and went to the <code>*Shell Command Output*</code> buffer.</p>
+
+<p>I will play with regexp-builder on that, but how do I add error patterns to the existing thing?</p>
+
+<p>Additionally, I find that the error highlighting is one character off. Racket reporting zero-based colukmn numbers or something. Also the entire following sexp should be underlined (as opposed to underlining a single paren.)</p>
+
+<h3>more advanced syntax checking?</h3>
+
+<p>Well, Racket actually <a href="http://docs.racket-lang.org/tools/Check_Syntax.html">has a syntax checker module</a>, while this is just reporting the errors on trying to load a file. So how to make emacs talk to <code>drracket/check-syntax</code> package? Apparently one must write a Racket script. I don&rsquo;t know what it is saying about syntax objects. <code>(make-traversal ...)</code> apparently makes a Visitor type thing, but where do I get the visited?</p>
+
+<p><a href="http://docs.racket-lang.org/reference/syntax-model.html#%28part._stxobj-model%29">Syntax objects</a></p>
+
+<p>On the other hand, I don&rsquo;t see the &ldquo;Check Syntax&rdquo; button in DrRacket giving any more information about those pesky &ldquo;no expression in body&rdquo; errors (like a line number would be helpful!)</p>
+
+<p>Okay, put this down for now.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&gt; (make-traversal (make-base-namespace) "chap3.1.rkt")
+</span><span class='line'>#&lt;procedure:expanded-expression&gt;
+</span><span class='line'>#&lt;procedure:expansion-completed&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<blockquote><p>Actually this particular syntax error (at least when writing code in the <code>#lang planet neil/sicp</code> module) is annoying because it won&rsquo;t point you to the line on which error occurs despite it being mostly syntax. Usually turns out to be an &lsquo;if&rsquo; with no clauses, a duplicated paren, or something.</p>
+
+<p>Additionally, the red underline that flycheck puts is misplaced and tiny (it is frequently on an open paren, when it should really be on all of the first sexp inside that paren).</p></blockquote>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Peter Meilstrup</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-20T16:26:23-07:00" pubdate data-updated="true">2014-09-20</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/emacs/'>emacs</a>, <a class='category' href='/blog/categories/racket/'>racket</a>, <a class='category' href='/blog/categories/technote/'>technote</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://crowding.github.io/blog/2014/09/20/racket-and-flycheck-mode/" data-via="perisaccadic" data-counturl="http://crowding.github.io/blog/2014/09/20/racket-and-flycheck-mode/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/09/09/fixing-geiser-racket-repls-error-links/" title="Previous Post: Fixing geiser-racket-repl's error links">&laquo; Fixing geiser-racket-repl's error links</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/09/20/racket-and-flycheck-mode/">Racket and Flycheck-mode</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/09/fixing-geiser-racket-repls-error-links/">Fixing Geiser-racket-repl's Error Links</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/09/editing-regexes-interactively-in-emacs/">Editing Structured Regexes Interactively in Emacs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/05/get-emacs-set-up-for-racket/">Get Emacs Set Up for Racket</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/23/a-strange-writing-tic/">A Strange Writing Tic</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/crowding">@crowding</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'crowding',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>My Pinboard</h1>
+  <ul id="pinboard_linkroll">Fetching linkroll...</ul>
+  <p><a href="http://pinboard.in/u:crowding">My Pinboard Bookmarks &raquo;</a></p>
+</section>
+<script type="text/javascript">
+  var linkroll = 'pinboard_linkroll'; //id target for pinboard list
+  var pinboard_user = "crowding"; //id target for pinboard list
+  var pinboard_count = 3; //id target for pinboard list
+  (function(){
+    var pinboardInit = document.createElement('script');
+    pinboardInit.type = 'text/javascript';
+    pinboardInit.async = true;
+    pinboardInit.src = '/javascripts/pinboard.js';
+    document.getElementsByTagName('head')[0].appendChild(pinboardInit);
+  })();
+</script>
+
+
+<section class="twitter">
+  <a class="twitter-timeline" href="https://twitter.com/perisaccadic" data-widget-id="448287882478764032">Tweets by @perisaccadic</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Peter Meilstrup -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

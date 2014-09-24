@@ -9,7 +9,7 @@
   <meta name="author" content="Peter Meilstrup">
 
   
-  <meta name="description" content="My favorite version of Emacs on OS X is the branch by Yamamoto Mitsuharu. It has improved font rendering, better color calibration and a real full &hellip;">
+  <meta name="description" content="Now IN THEORY, Distel-mode is supposed to show me the online help when I point by cursor at a function name and press C-c C-d h. What I actually get &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -65,6 +65,564 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-05T18:14:41-07:00" pubdate data-updated="true">2014-05-05</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>Now IN THEORY, Distel-mode is supposed to show me the online help when I point by cursor at a function name and press <code>C-c C-d h</code>. What I actually get is:</p>
+
+<p>I am unable to Google up a description of how to let Distel know where the HTML documentaiton is (as I installed Erlang from Homebrew, I find the HTML docs under <code>/usr/local/Cellar/erlang/17.0/share/doc/erlang/doc/</code>.)</p>
+
+<p>Now looking in what <code>distel.el</code> actually does with a <code>C-c C-d h</code> I find that Distel contains a module <code>otp_doc</code> which is a singleton <code>gen_server</code>&hellip; so I go to an erlang shell on that node and type</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)3&gt; whereis(otp_doc).
+</span><span class='line'>&lt;0.44.0&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now I also saw that the <code>otp_doc</code> module had a property list as the init of its <code>gen_server</code> state. The state contained a <code>root_dir</code> variable. The root_dir variable is initialized to a default of <code>code:root_dir()</code>, which is currently set to:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)4&gt; code:root_dir().
+</span><span class='line'>"/usr/local/Cellar/erlang/17.0/lib/erlang"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Aping Distel and calling otp_doc does:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)9&gt; otp_doc:distel(link, "orddict", "find", 2).
+</span><span class='line'>no_html</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Meanwhile, another Distel function <code>C-c C-d A</code> which is bound to <code>erl-show-arglist</code>  works fine when pressed ad <code>orddict:find|</code>. And <code>C-c C-d d</code> also comes up with useful information &mdash; but this information doesn&rsquo;t look like /documentation/.</p>
+
+<p>From Emacs. <code>C-c C-d h</code> does <code>(erl-do-find-doc 'link 'point 'code</code>root_dir 0)`,</p>
+
+<p>And it looks like <code>init()</code> calls <code>index_html()</code> the <code>no_html</code> is coming from <code>init()</code> I guess. Here&rsquo;s how:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>html_index(file,Dir) -&gt;
+</span><span class='line'>  FN = filename:join([Dir,"doc","man_index.html"]),
+</span><span class='line'>  fold_file(curry(fun lines/3,Dir),[],FN).</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So do I need to set root_dir to <code>/usr/local/Cellar/erlang/17.0/share/erlang</code>? Or alter how otp_doc is being initialized? Looks like it is accessed through <code>otp_doc:start</code>.</p>
+
+<p>So how to provide the start state from Emacs?</p>
+
+<p>I can&rsquo;t find where this value is configured, anywhere.</p>
+
+<p>So I just crapped out and made a symlink:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>dekkera:lib peter$ cd /usr/local/Cellar/erlang/17.0/lib/erlang
+</span><span class='line'>dekkera:lib peter$ ln -s ../../share/doc/erlang/doc doc</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This got rid of no_html error but I still don&rsquo;t find any HTML documentation! What the hell.  I&rsquo;ll have to see why it&rsquo;s not reading the HTML file and populating the ETS database, or something.</p>
+
+<p>This is more debugging of Erlang than I can handle when all I&rsquo;m trying to do is write Erlang code. Argh.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/28/un-pause-programs-in-os-x/">Un-pause Programs in OS X</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-28T12:43:01-07:00" pubdate data-updated="true">2014-04-28</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&rsquo;m not sure why there isn&rsquo;t a builtin way to do this. When a process eats all memory on OS X, it starts &ldquo;pausing&rdquo; applications. Upon killing the offending app, one wants to un-pause all the apps. But if you close the dialog, you can&rsquo;t resume!</p>
+
+<p>I can &ldquo;resume&rdquo; like this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>pgrep Chrome | xargs kill -CONT</span></code></pre></td></tr></table></div></figure>
+
+
+<p>which appears to make the apps usable again but the processes still show up as &ldquo;paused&rdquo; in the force quit dialog. Also, I think the unpausing should respect the process tree (not process names.)</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/26/actually-create-a-bootable-linux-usb-key-for-mac/">Actually Create a Bootable Linux USB Key for Mac</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-26T12:32:28-07:00" pubdate data-updated="true">2014-04-26</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I wanted to install Linux on a partition on an older (2008) Macbook Pro. It has no working CD drive. In fact having no CD drive is an accelerating trend these days.</p>
+
+<p>Now the Ubuntu site has <a href="http://www.ubuntu.com/download/desktop/create-a-usb-stick-on-mac-osx">instructions</a> for making a bootable USB stick. These instructions don&rsquo;t work on my machine. Nonetheless [contrary to some reports], it is completely possible to boot this machine off a USB stick. For example, just imaging the OS X installer DVD to a USB key using Disk Utility results in a bootable key. So something is not right with the Ubuntu image or instructions.</p>
+
+<p><a href="http://sevenbits.github.io/Mac-Linux-USB-Loader/">this did not work</a>
+<a href="http://penguintosh.com/about/">this did not even run</a>
+<a href="http://tillmail.de/wordpress/436">this did not work at first either</a> (even the special boot loader)
+installing <a href="">rEFIt</a> gave no boot menu.</p>
+
+<p>So here are directions that actually work. Or at least record my progress</p>
+
+<p>Install rEFIt, but then I ran the <code>enable_always.sh</code> command, and I finally saw a boot menu on startup, and it detected the EFI file on the USB stick.</p>
+
+<p>However, the <code>bootX64.efi</code> file showed a &ldquo;not compatible&rdquo; error when I tried to boot it. Using the 32-bit bootIA32.efi worked, and got me into a GRUB prompt.</p>
+
+<p>From the GRUB prempt, I typed,</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ls
+</span><span class='line'>ls (hd0,msdos1)
+</span><span class='line'>ls (hd0,msdos1)/efi/boot
+</span><span class='line'>ls (hd0,msdos1)/efi/boot/&lt;name of my .iso&gt;
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Er, no, it looks like I can&rsquo;t actually make GRUB boot an .iso image off a USB disk from the command line. It (and the other &ldquo;Linux USB Creator&rdquo; apps installed boot.efi files that gave &ldquo;unsupported&rdquo; errors. So the thing to do is to extract the contents of the .iso and see if GRUB works with that.</p>
+
+<p>So:</p>
+
+<h2>New attempt</h2>
+
+<p>I tried to mount the ISO to copy off the filesystem, but ISO was of course an ext filesystem unsupported on OS X I tried briefly to mount the thing using FUSE but I don&rsquo;t know how to do an ISO that way. So I loaded up an Ubuntu VM under VirtualBox, and Ubuntu&rsquo;s Startup Disk Creator utility extracted the ISO to a FAT filesystem key for me (had to try a couple of different keys to find one that that didn&rsquo;t freeze the VM_on startup though)</p>
+
+<p>Booting Mounting this in the mac again, I found rEFIT was able to see the USB key. Also, the builtin startup menu saw the ket without need for rEFIt. But now I&rsquo;ve got an &ldquo;unsupported operation&rdquo; again when I actually try to boot the files. Closer though. So next I&rsquo;ll copy over the GRUB that (sort of worked)[<a href="http://tillmail.de/wordpress/436">http://tillmail.de/wordpress/436</a>] and</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>root (hd0,msdos1)
+</span><span class='line'>configfile /boot/grub/grub.config</span></code></pre></td></tr></table></div></figure>
+
+
+<p>got me into a GRUB menu. Any of the options past the menu led to a blank screen though. Crud.</p>
+
+<p>(eta: this may be due to the grub.config having references to <code>/cdrom</code> instead of the usb)</p>
+
+<p>I tried again with a Mint installer. Mint wouldn&rsquo;t even boot in VirtualBox so I made the Mint usbkey using Ubuntu&rsquo;s startup disk creator again.</p>
+
+<p>FINALLY, starting Mint in &ldquo;compatibility mode&rdquo; did something and I see Linux kernel messages. Seems to freeze after a while though, in the middle of something&hellip; and now I see that &ldquo;blank screen&rdquo; on startup really means &ldquo;kernel hasn&rsquo;t figured out the video&rdquo;</p>
+
+<p>What could I try next? Maybe install the live image as a partition? I think I&rsquo;m getting through the USB hurdle though?</p>
+
+<p>Next I tried &ldquo;unetbootin.&rdquo; Mac version was unresponsive so tried on Ubuntu virtualbox.</p>
+
+<p>Should also try starting with a 10.10 .iso. because apparently compatibility decreases over time.</p>
+
+<p>Okay, so booting using rEFIt as a &ldquo;legacy OS&rdquo; off of USB using the 10.10 ISO did not work. Nor did copying the contents of the USB stick to a new partition.</p>
+
+<p>Next I will try making a Mint ISO again with a different kernel?</p>
+
+<p>Or Debian &ldquo;Lenny&rdquo; since <a href="http://fieldeffect.info/w/MacBookProUSB">this person</a> seems to have had success&hellip;.</p>
+
+<h3>Failure threshold approaching</h3>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/16/compiling-a-raspberry-pi-kernel-via-ubuntu/">Compiling a Raspberry Pi Kernel via Ubuntu</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-16T12:42:41-07:00" pubdate data-updated="true">2014-04-16</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p><a href="2014-04-15-compiling-a-raspberry-pi-kernel-on-osx">Previously</a>, I set up a crosstools-NG build environment on OSX and then tried to compile a kernel. The kernel compilation process was a bit much to adjust to. Easier to just install Ubuntu in a VirtualBox image and do compilation there.</p>
+
+<p>After installing Ubuntu on the image, I did (mostly via <a href="http://raspberrypi.stackexchange.com/questions/192/how-do-i-cross-compile-the-kernel-on-a-ubuntu-host">this stackexchange answer</a>):</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo apt-get install git ncurses-dev make gcc-arm-linux-gnueabi</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git clone https://github.com/petli/linux.git -b rpi-3.10-usb-sound-backport raspi-linux</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd raspi-linux
+</span><span class='line'>ssh pi@raspberrypi.local zcat /proc/config.gz &gt; .config</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note that I had to set VirtualBox to &ldquo;bridged adapter&rdquo; mode in order to see the &lsquo;local&rsquo; devices on the network.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- oldconfig</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- menuconfig</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- -j8
+</span><span class='line'>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- modules -j8</span></code></pre></td></tr></table></div></figure>
+
+
+<p>NB. I configured VirtualBox to see as 8 cores for <code>-jN</code> to produce a speedup.</p>
+
+<p>That&hellip;. was straightforward.</p>
+
+<p>Now to install it on the Pi. I&rsquo;ll just take my SD card and mount it on the Ubuntu host for this. This required installing the VirtualBox Extension Pack. And using a USB SD card reader since I couldn&rsquo;t figure out how to work the Mac&rsquo;s builtin reader in VirtualBox.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>mv /media/BOOT/kernel.img /media/BOOT/kernel_old.img
+</span><span class='line'>cp arch/arm/boot/Image /media/BOOT/kernel.img
+</span><span class='line'>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi-  INSTALL_MOD_PATH=~/modules modules_install
+</span><span class='line'>sudo cp -r ~/modules/lib/* /media/root/lib/</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Upon booting I got some errors about &ldquo;<code>disagrees about version of symbol module_layout</code>&rdquo;. This made no sense, as modinfo showed the same version as <code>uname -a</code>, but then I added <code>gcc</code> to the <code>make-modules-install</code> option (this had previously ended in &ldquo;<code>-</code>&rdquo; like I would have expected), and made sure all modules were owned and writable only by root. That combination appeared to work (I was less than scientific in doing both at once.)</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx/">(Not) Compiling a Raspberry Pi Kernel on OSX</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-15T00:53:35-07:00" pubdate data-updated="true">2014-04-15</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>One thing leads to another and suddenly you want to compile a new Raspberry Pi kernel, and your most convenient host is a Mac.</p>
+
+<p>I started with <a href="http://www.jaredwolff.com/blog/cross-compiling-on-mac-osx-for-raspberry-pi/">some existing notes</a> about this &mdash;  but I found they needed some tweaking and some updates have happened which make things a little easier.</p>
+
+<p>I&rsquo;m using crosstool-ng from Homebrew on OS X 10.9.</p>
+
+<h1>Instructions</h1>
+
+<h2>Install packages</h2>
+
+<p>These are the packages I needed from Homebrew.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>brew tap homebrew/versions
+</span><span class='line'>brew install gcc48
+</span><span class='line'>brew install crosstool-ng
+</span><span class='line'>brew tap homebrew/dupes
+</span><span class='line'>brew install grep
+</span><span class='line'>brew install gettext
+</span><span class='line'>brew link --force gettext
+</span><span class='line'>brew install ncurses
+</span><span class='line'>brew link --force ncurses</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note that <code>link --force</code> is not a particularly nice thing to do, and will (e.g.) prevent you from reinstalling crosstool-ng without uninstalling gettext first. But it appears to be necessary, as eglibc build fails without it (and I don&rsquo;t understand if there&rsquo;s an option that will let me specity gettext&rsquo;s location to eglibc)</p>
+
+<h2>Make crosstools use GNU grep</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>chmod u+w /usr/local/Cellar/crosstool-ng/1.19.0/lib/ct-ng.1.19.0/paths.sh</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Edit <code>paths.sh</code>, changing the line about <code>grep</code> to read:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>export grep="/usr/local/bin/ggrep"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>(Is there a user-level config way to do this w/o poking around in the Homebrew cellar?)</p>
+
+<h2>Create disk images</h2>
+
+<p>Crosstools needs case-sensitive file systems to work on, we&rsquo;ll create two images, one to compile in and one to host the binaries.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd ~
+</span><span class='line'>mkdir xtools-images
+</span><span class='line'>cd xtools-images
+</span><span class='line'>hdiutil create -size 6g \
+</span><span class='line'>   -attach -type SPARSE -fs 'Case-sensitive Journaled HFS+' \
+</span><span class='line'>   -volname xtools-build-env xtools-build-env
+</span><span class='line'>hdiutil create -size 500m \
+</span><span class='line'>   -attach -type SPARSE -fs 'Case-sensitive Journaled HFS+' \
+</span><span class='line'>   -volname xtools xtools</span></code></pre></td></tr></table></div></figure>
+
+
+<h2>Set up crosstools-ng</h2>
+
+<p>Thanks to <a href="https://github.com/Kentzo/armv6-rpi-linux-gnueabihf">Kentzo</a> there is a Raspberry Pi configuration already in <code>crosstools-ng</code> in Homebrew, and there only need minor adjustments.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd /Volumes/xtools-build-env/
+</span><span class='line'>ct-ng armv6-rpi-linux-gnueabi</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now extract this repository onto the drive image. It contains a <code>.config</code> file and a couple of patches.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>git clone homeGit/peter/raspberry-pi-osx-crosstools-config .</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then inspect the configuration:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ct-ng menuconfig</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Check that all the paths under &ldquo;Paths&rdquo; point to somewhere logical (mounted on your disk images)</p>
+
+<p>For extra speed, set &ldquo;Paths::Build behavior::number of parallel jobs&rdquo; to twice your number of cores. This also means you will need to also up the <code>ulimit</code> before building. (If there are weird errors about no rules to make targets related to language localization, you probably forgot to do this.) So now do</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>ulimit -n 1024
+</span><span class='line'>ct-ng build</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Hopefully this will work.</p>
+
+<h2>Test the compiler</h2>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cat &gt; test.c
+</span><span class='line'>#include &lt;stdio.h&gt;
+</span><span class='line'>int main() { printf("Hello, world!\n"); return 0; }</span></code></pre></td></tr></table></div></figure>
+
+
+<p>(press ctrl-d to finish)</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-gcc -o test test.c</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Copy <code>test</code> over to your RPi and try running it.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>scp test pi@raspberrypi.local:
+</span><span class='line'>ssh pi@raspberrypi.local /home/pi/test</span></code></pre></td></tr></table></div></figure>
+
+
+<h1>Compiling a Kernel</h1>
+
+<p>Well this is what I signed up for.</p>
+
+<p>I wanted to build the kernel described <a href="https://github.com/petli/linux/tree/rpi-3.10-usb-sound-backport">here</a>.</p>
+
+<p>I&rsquo;m cribbing from <a href="http://akanto.wordpress.com/2012/09/25/cross-compiling-kernel-for-raspberry-pi-on-fedora-17-part-1/">these</a> notes.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>cd /Volumes/xtools-build-env/
+</span><span class='line'>git clone https://github.com/petli/linux.git -b rpi-3.10-usb-sound-backport</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Copy the existing config.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>scp pi@raspberrypi.local:/proc/config.gz ./linux-config.gz
+</span><span class='line'>gunzip linux-config.gz
+</span><span class='line'>cp linux-config linux/.config</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- oldconfig</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>menuconfig</code> doersn&rsquo;t work for me because of some <code>ncurses</code> problem but there is <code>make nconfig</code></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now it is complaining about lack of &ldquo;elf.h&rdquo; Where is it looking for elf.h?</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>sudo cp ../elf.h ../elftypes.h /usr/include
+</span><span class='line'> 
+</span><span class='line'>brew install libelf
+</span><span class='line'>sudo ln -s /usr/local/include/libelf /usr/include/libelf</span></code></pre></td></tr></table></div></figure>
+
+
+<p>&hellip; and some other advice from the internet, which didn&rsquo;t work either. It&rsquo;s not the &lsquo;echo&rsquo; problem, as that&rsquo;s been long fixed.</p>
+
+<h1>Giving up threshold reached</h1>
+
+<p>&hellip;. oh but adjusting Linux enough to compile in an OSX environment is going to be bad. gonna investigate just installing an Ubuntu VM under VirtualBox and compiling there</p>
+
+<p>honestly a kernel compile on the Pi itself would have finished by now</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -408,23 +966,23 @@ JUST BECAUSE YOU WRITE YOUR STUPID THING IN SHELL IS NO EXCUSE FOR THIS SHIT.</p
   <ul id="recent_posts">
     
       <li class="post">
-        <a href="/blog/2014/05/21/itunes-library-manipulation-with-python/">iTunes Library Manipulation With Python</a>
+        <a href="/blog/2014/09/20/racket-and-flycheck-mode/">Racket and Flycheck-mode</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/05/19/whitespace-mode/">Whitespace-mode</a>
+        <a href="/blog/2014/09/09/fixing-geiser-racket-repls-error-links/">Fixing Geiser-racket-repl&#8217;s Error Links</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/05/15/time-shifting-an-internet-stream/">Time Shifting an Internet Stream With VLC</a>
+        <a href="/blog/2014/09/09/editing-regexes-interactively-in-emacs/">Editing Structured Regexes Interactively in Emacs</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</a>
+        <a href="/blog/2014/09/05/get-emacs-set-up-for-racket/">Get Emacs Set Up for Racket</a>
       </li>
     
       <li class="post">
-        <a href="/blog/2014/04/28/un-pause-programs-in-os-x/">Un-pause Programs in OS X</a>
+        <a href="/blog/2014/08/23/a-strange-writing-tic/">A Strange Writing Tic</a>
       </li>
     
   </ul>

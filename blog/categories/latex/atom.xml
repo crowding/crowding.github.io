@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Latex | Illusory stillness]]></title>
+  <link href="http://crowding.github.io/blog/categories/latex/atom.xml" rel="self"/>
+  <link href="http://crowding.github.io/"/>
+  <updated>2014-09-23T22:48:32-07:00</updated>
+  <id>http://crowding.github.io/</id>
+  <author>
+    <name><![CDATA[Peter Meilstrup]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Hevea]]></title>
+    <link href="http://crowding.github.io/blog/2014/07/25/hevea/"/>
+    <updated>2014-07-25T14:55:01-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/07/25/hevea</id>
+    <content type="html"><![CDATA[<p>So I wrote a thesis, using some self-torturing chain of LyX, <a href="http://yihui.name/knitr/">knitr</a>, and a build tool of my own devising. It made a PDF, now I want to make it a webpage.</p>
+
+<p>I tried a few tools, and settled on <a href="http://hevea.inria.fr/">HeVeA</a> as the tool that showed the most promise (as in, &lsquo;it actually generated some HTML for a subset of my files, within a few hours of work&rsquo;). That&rsquo;s not close to &ldquo;working&rdquo; though.</p>
+
+<p>Currently, I&rsquo;m having a problem where a <code>\ref{}</code> is processed correctly by LaTeX, producing a link labeled &ldquo;Figure x&rdquo;, but incorrectly by Hevea, including the entire caption, like so:</p>
+
+<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | "title text" ["alt text"]] %}</p>
+
+<p>Disabling the <code>hyperref</code> and <code>refstyle</code> packages didn&rsquo;t do much. I seem to remember also having this problem when using a <code>ref{}</code> to another figure inside of a figure caption but I am not sure how that was resolved.</p>
+
+<p>This is one problem with LaTeX projects, they become hard to troubleshoot. For any two things you want to do in LaTeX, there are four packages offering each, for 16 combinations, each of which will be grossly or subtly incompatible in some way.</p>
+
+<p>In this case, something somewhere is fucking with the generation of reference labels or something. The actual HTML looks like:</p>
+
+<p><code>html
+&lt;a href="#mov%3Auncrowded"&gt;2.1(demo_circle_6.mov) An example
+motion stimulus similar to those used in my experiments. There are six
+elements, with the carrier motion clockwise and the envelope
+counterclockwise. The envelope motion dominates the subjective
+appearance. figure.caption.2&lt;/a&gt; shows six elements, so the spacing
+between elements
+</code></p>
+
+<p>which was constructed from this TeX:</p>
+
+<p><code>
+\ref{mov:uncrowded} shows six elements, so the spacing between elements
+</code></p>
+
+<p>Now, part of the fuckup is with hyperref? maybe? Next I need to try constructing a minimal example. Luckily I have a minimal example already&hellip;.</p>
+
+<h3>Some time later</h3>
+
+<p>OK so, turns out the inclusion of figure captions in labels was caused by an ill-thought-out line I had written in <code>trouble.hva</code>:</p>
+
+<p><code>
+\renewcommand{\AtBeginDocument}[1]{}
+</code></p>
+
+<p>I had written this to &ldquo;prevent&rdquo; an error that was occurring when <code>hevea</code> was  reading the <code>.aux</code> file, but it also screwed up hyperref. It seems I can&rsquo;t get hyperref to work with hevea, and cleveref.</p>
+
+<h3>Giving up</h3>
+
+<p>After constructing a minimal example, I still couldn&rsquo;t identify a way to make autoref/cleverref references work.</p>
+
+<h2>Tex4ht</h2>
+
+<p>Someone suggested that <code>tex4ht</code> might work better than <code>hevea</code>, and at least it correctly processed my minimal example. That doen&rsquo;t mean it&rsquo;ll process the the whole thesis, though.</p>
+
+<p>The first problem is:</p>
+
+<p><code>
+--- warning --- Can't find/open file `introduction_chapter.dvi'
+--- error --- Can't find/open file `introduction_chapter.dvi'
+</code></p>
+
+<p>Which was because I was using <code>tex4ht</code> and not <code>htlatex</code>. Using <code>htlatex</code> I instead get:</p>
+
+<p><code>``
+! I can't find file</code>introduction_chapter.html'.
+<to be read again></p>
+
+<pre><code>               \relax
+</code></pre>
+
+<p>l.79 \begin{document}
+```</p>
+
+<p>Which is odd since that command is actually supposed to be making the file!</p>
+
+<p>So it must be failing at an earlier stage?</p>
+]]></content>
+  </entry>
+  
+</feed>

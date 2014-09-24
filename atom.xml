@@ -4,7 +4,7 @@
   <title><![CDATA[Illusory stillness]]></title>
   <link href="http://crowding.github.io/atom.xml" rel="self"/>
   <link href="http://crowding.github.io/"/>
-  <updated>2014-06-10T23:07:57-07:00</updated>
+  <updated>2014-09-23T22:48:32-07:00</updated>
   <id>http://crowding.github.io/</id>
   <author>
     <name><![CDATA[Peter Meilstrup]]></name>
@@ -12,6 +12,800 @@
   </author>
   <generator uri="http://octopress.org/">Octopress</generator>
 
+  
+  <entry>
+    <title type="html"><![CDATA[Racket and Flycheck-mode]]></title>
+    <link href="http://crowding.github.io/blog/2014/09/20/racket-and-flycheck-mode/"/>
+    <updated>2014-09-20T16:26:23-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/09/20/racket-and-flycheck-mode</id>
+    <content type="html"><![CDATA[<p>From <a href="{*post-url%202014-09-05-get-emacs-set-up-for-racket.markdown*}">earlier</a>, I had the following complaints about flycheck:</p>
+
+<blockquote><p>As I edit code I&rsquo;m getting this annoyingly big message in the minibuffer:</p>
+
+<p>&#8220;`
+Checker racket returned non-zero exit code 1, but no errors from output: r5rs:body: no expression in body
+  in: (r5rs:body (define (new-record data) attach-tag data) (define (get-record name) (new-record data)) (define (get-salary record) (quote salary)))
+  context&hellip;:
+   /Applications/Racket v6.1/share/pkgs/r5rs-lib/r5rs/main.rkt:335:2</p>
+
+<p>Checker definition probably flawed.
+&#8220;`</p>
+
+<p>In other words, one kind of syntax error (no expression on body) is not getting interpreted as an &ldquo;error&rdquo;.</p></blockquote>
+
+<p>To fix this, I need to fix the error patterns that Racket checker uses, to make it catch a certain error as an error.</p>
+
+<p>Now, what is some example output from the racket compiler? I ran <code>M-! racket -f chap3.1.rkt</code> and went to the <code>*Shell Command Output*</code> buffer.</p>
+
+<p>I will play with regexp-builder on that, but how do I add error patterns to the existing thing?</p>
+
+<p>Additionally, I find that the error highlighting is one character off. Racket reporting zero-based colukmn numbers or something. Also the entire following sexp should be underlined (as opposed to underlining a single paren.)</p>
+
+<h3>more advanced syntax checking?</h3>
+
+<p>Well, Racket actually <a href="http://docs.racket-lang.org/tools/Check_Syntax.html">has a syntax checker module</a>, while this is just reporting the errors on trying to load a file. So how to make emacs talk to <code>drracket/check-syntax</code> package? Apparently one must write a Racket script. I don&rsquo;t know what it is saying about syntax objects. <code>(make-traversal ...)</code> apparently makes a Visitor type thing, but where do I get the visited?</p>
+
+<p><a href="http://docs.racket-lang.org/reference/syntax-model.html#%28part._stxobj-model%29">Syntax objects</a></p>
+
+<p>On the other hand, I don&rsquo;t see the &ldquo;Check Syntax&rdquo; button in DrRacket giving any more information about those pesky &ldquo;no expression in body&rdquo; errors (like a line number would be helpful!)</p>
+
+<p>Okay, put this down for now.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>&gt; (make-traversal (make-base-namespace) "chap3.1.rkt")
+</span><span class='line'>#&lt;procedure:expanded-expression&gt;
+</span><span class='line'>#&lt;procedure:expansion-completed&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<blockquote><p>Actually this particular syntax error (at least when writing code in the <code>#lang planet neil/sicp</code> module) is annoying because it won&rsquo;t point you to the line on which error occurs despite it being mostly syntax. Usually turns out to be an &lsquo;if&rsquo; with no clauses, a duplicated paren, or something.</p>
+
+<p>Additionally, the red underline that flycheck puts is misplaced and tiny (it is frequently on an open paren, when it should really be on all of the first sexp inside that paren).</p></blockquote>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Fixing Geiser-racket-repl's Error Links]]></title>
+    <link href="http://crowding.github.io/blog/2014/09/09/fixing-geiser-racket-repls-error-links/"/>
+    <updated>2014-09-09T22:36:52-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/09/09/fixing-geiser-racket-repls-error-links</id>
+    <content type="html"><![CDATA[<p>Geiser REPL mode is pretty good, but man the error links were (a) broken and (b) eyewatering. Here&rsquo;s an example:</p>
+
+<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | &ldquo;title text&rdquo; [&ldquo;alt text&rdquo;]] %}</p>
+
+<p>I mean, are there error messages somewhere in all those pathnames and red?</p>
+
+<p>After some fussing I got it to look better.</p>
+
+<!-- more -->
+
+
+<h3>The fussing</h3>
+
+<p>Anyway, the fontification for errors is hideously wrong: error <em>message</em> should be eyewatering, <em>full path to file</em> should be muted (except for maybe the basename.)</p>
+
+<p>It&rsquo;s seriously impeding my ability to read, so let&rsquo;s&hellip;.</p>
+
+<p>Actually this is a similar problem as with flycheck, perhaps? Let&rsquo;s find the fontification problem first.</p>
+
+<p>&hellip; this is harder than I thought. Why, when I <code>(setq font-lock-keywords nil)</code> then <code>(font-lock-fontify-buffer)</code>, does it
+not clear fontification? Ah. I want <code>(font-lock-defontify)</code> No wait, I
+actually want <code>(font-lock-unfontify-buffer)</code>. And that makes it clear
+that the underlines links are not coming from fontity-buffer. Are they
+coming from compilation-mode somehow? Okay, so <code>geiser-repl-mode</code>
+calls <code>(compilation-setup)</code> to enter <code>compilation-shell-minor-mode</code> We
+have <code>compilation-font-lock-keywords</code> which doesn&rsquo;t seem to have the
+keywords.</p>
+
+<p>Ah! It&rsquo;s <code>compilation-error-regexp-alist</code>.</p>
+
+<p>After <a href="2014-09-09-editing-regexes-interactively-in-emacs.html">some futzing around with regex-builder and structured regexes</a> I came to a number of different regexes, like so:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(defadvice geiser-repl--startup (after pbm-geiser-repl-errors activate)
+</span><span class='line'>  (message "setting up geiser repl error highlighting")
+</span><span class='line'>  (set (make-local-variable 'compilation-error-regexp-alist)
+</span><span class='line'>       `(
+</span><span class='line'>         ;; &lt;path&gt;:line:col: error message
+</span><span class='line'>         ;; &lt;path&gt;: [not a function name]
+</span><span class='line'>         (,(rx (seq bol
+</span><span class='line'>                    (or "" "   ")
+</span><span class='line'>                    (group-n 1
+</span><span class='line'>                             (one-or-more (not (any ":\n \t&gt;")))
+</span><span class='line'>                             (zero-or-more (not (any ":\n\t&gt;"))))
+</span><span class='line'>                    ": "
+</span><span class='line'>                    (group-n 2 (seq "[" (minimal-match (one-or-more anything)) "]"))))
+</span><span class='line'>          1 nil nil 0 1
+</span><span class='line'>          (1 file-name-shadow-properties)
+</span><span class='line'>          (2 file-name-shadow-properties))
+</span><span class='line'>         ;; &lt;path&gt;:&lt;line&gt;:&lt;col&gt;: &lt;function-name&gt;
+</span><span class='line'>         (,(rx (seq bol
+</span><span class='line'>                    (or "" "   ")
+</span><span class='line'>                    (group-n 1
+</span><span class='line'>                             (one-or-more (not (any ":\n \t&gt;")))
+</span><span class='line'>                             (zero-or-more (not (any ":\n\t&gt;"))))
+</span><span class='line'>                    ":" (group-n 2 (one-or-more digit))
+</span><span class='line'>                    ":" (group-n 3 (one-or-more digit))
+</span><span class='line'>                    ": "
+</span><span class='line'>                    (group-n 4 (one-or-more (any word "-_~!/@$%^&&lt;&gt;{}?")))
+</span><span class='line'>                    eol))
+</span><span class='line'>          1 2 3 0 1
+</span><span class='line'>          (1 file-name-shadow-properties)
+</span><span class='line'>          (4 font-lock-function-name-face))
+</span><span class='line'>         ;; &lt;path&gt;:line:col: error message
+</span><span class='line'>         (,(rx (seq bol
+</span><span class='line'>                    (or "" "   ")
+</span><span class='line'>                    (group-n 1
+</span><span class='line'>                             (one-or-more (not (any ":\n \t&gt;")))
+</span><span class='line'>                             (zero-or-more (not (any ":\n\t&gt;"))))
+</span><span class='line'>                    ":" (group-n 2 (one-or-more digit))
+</span><span class='line'>                    ":" (group-n 3 (one-or-more digit))
+</span><span class='line'>                    ": "
+</span><span class='line'>                    (group-n 4 (minimal-match (one-or-more anything)))
+</span><span class='line'>                    eol))
+</span><span class='line'>          1 2 3 2 1
+</span><span class='line'>          (1 file-name-shadow-properties)
+</span><span class='line'>          (4 compilation-error-face))
+</span><span class='line'>         ;; &lt;function-name&gt;: &lt;error-message&gt;
+</span><span class='line'>         (,(rx (seq bol
+</span><span class='line'>                    (or "" "   ")
+</span><span class='line'>                    (group-n 1 (one-or-more (any word "-_~!/@$%^&&lt;&gt;{}?.")))
+</span><span class='line'>                    (group-n 2 "")
+</span><span class='line'>                    ": "
+</span><span class='line'>                    (group-n 3 (minimal-match (one-or-more anything)))
+</span><span class='line'>                    eol))
+</span><span class='line'>          nil nil nil 2 2
+</span><span class='line'>          (1 font-lock-function-name-face)
+</span><span class='line'>          (3 compilation-error-face))
+</span><span class='line'>         ;; &lt;path&gt;:&lt;line&gt;:&lt;col&gt;
+</span><span class='line'>         (,(rx (seq bol
+</span><span class='line'>                    (or "" "   ")
+</span><span class='line'>                    (group-n 1
+</span><span class='line'>                             (one-or-more (not (any ":\n \t&gt;")))
+</span><span class='line'>                             (zero-or-more (not (any ":\n\t&gt;"))))
+</span><span class='line'>                    ":" (group-n 2 (zero-or-more digit))
+</span><span class='line'>                    ":" (group-n 3 (zero-or-more digit))
+</span><span class='line'>                    eol))
+</span><span class='line'>          1 2 3 0 1
+</span><span class='line'>          (1 file-name-shadow-properties)))))</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Which looks much better:</p>
+
+<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | &ldquo;title text&rdquo; [&ldquo;alt text&rdquo;]] %}</p>
+
+<p>Ah, see, the actual error message is highlighted, and the pile of linked pathnames is muted.</p>
+
+<p>It&rsquo;s not perfect but it&rsquo;s a definite improvement.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Editing Structured Regexes Interactively in Emacs]]></title>
+    <link href="http://crowding.github.io/blog/2014/09/09/editing-regexes-interactively-in-emacs/"/>
+    <updated>2014-09-09T15:50:44-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/09/09/editing-regexes-interactively-in-emacs</id>
+    <content type="html"><![CDATA[<p>I was using regex-builder to make something, but it still looked like this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>"^ *\\([^:(\t\n]+\\)\\(:\\([0-9]+\\)\\)?\\(:\\([0-9]+\\)\\)?\\(: \\(\\(\\w\\|\\s_\\)+\\|\\[\\(\\w\\|\\s \\)+\\]\\)\\)?\\(: \\(.*\\)\\)?"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Leaning-toothpicks syndrome is kicking my ass. What if I write a regex using S-expressions? Wouldn&rsquo;t that be the bee&rsquo;s knees?</p>
+
+<p>Well, one thing I can do use use the <code>rx</code> macro, but <code>re-builder</code> doesn&rsquo;t seem to want to work with it. I call <code>(reb-change-syntax)</code> to select &lsquo;rx&rsquo; but it only performs a search sometimes? And often finds no matches?</p>
+
+<p>Debugging from this impetus I get to stepping through <code>reb-update-overlays</code> but I can&rsquo;t inspect the value of local variables in either <code>edebug</code> or <code>debug</code> for some weird reason. (Because of <code>-*- lexical-binding:t -*-</code> in the file.)</p>
+
+<p>New yak frame: how to inspect vars in  lexically bound code? It&rsquo;s probably impossible, though there was an incomplete <a href="http://emacs.1067599.n5.nabble.com/Edebug-amp-lexical-scope-td202618.html">thread</a> about it a couple years ago.</p>
+
+<p>Well, I guess I&rsquo;ll debug it by adding messages.</p>
+
+<p>Now, I find that when I use <code>(rx (one-or-more "/"))</code>, that macro should expand to <code>"/+"</code> but but the regexp we search for is actually <code>"\\(?:/\\+\\)"</code> which doesn&rsquo;t look like a proper regex. What is <code>reb-target-binding</code> doing? Pulling the binding from the target buffer. What&rsquo;s <code>reb-cook-regexp</code> doing? Calling <code>rx-to-string</code> on the result of an <code>rx</code> macro. Which it shouldn&rsquo;t?</p>
+
+<p>Oh, I was typing</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(rx (one-or-more ":"))</span></code></pre></td></tr></table></div></figure>
+
+
+<p>in the buffer like a sucker (idk, that&rsquo;s what you would write in Elisp?). Turns out I need to type</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>'(one-or-more ":")</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So how do I do a longer regex????? Use <code>and</code>/<code>seq</code>. It should be called <code>progn</code>, shouldn&rsquo;t it? Turns out I should write in regexp-builder like</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>'(seq (one-or-more ":") (class )</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So now I write regexps in regexp-builder like:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>'(seq bol (zero-or-more " ")
+</span><span class='line'>      (group (one-or-more (not (char ":\n\t"))))
+</span><span class='line'>      (zero-or-one ":" (group (one-or-more digit)))
+</span><span class='line'>      (zero-or-one ":" (group (one-or-more digit)))
+</span><span class='line'>      (zero-or-one ": " (group (one-or-more (or (syntax word) (syntax symbol))))))</span></code></pre></td></tr></table></div></figure>
+
+
+<p>and then paste the <code>(seq ...)</code> into an <code>(rx ...)</code> macro when I&rsquo;m done.</p>
+
+<p>Well, there&rsquo;s one more problem. Sometimes I can type a correct regexp and it won&rsquo;t update (it actually removes all highlights). Seems to have something to do with regexp-builder behaving inappropriately when an edit doesn&rsquo;t change the compiled form of the regexp. But I can then call <code>(reb-force-update)</code> and it does, that&rsquo;ll work for now.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Get Emacs Set Up for Racket]]></title>
+    <link href="http://crowding.github.io/blog/2014/09/05/get-emacs-set-up-for-racket/"/>
+    <updated>2014-09-05T13:24:15-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/09/05/get-emacs-set-up-for-racket</id>
+    <content type="html"><![CDATA[<p>I want to get back to doing problems out of SICP, but I want to use a more familiar editor.</p>
+
+<p>Racket suggests Geiser and Quack. I already have Geiser installed from sopme package archive when I aborted an earlier attempt (and Geiser is supposed to, independently, include a version of Quack, or something?)</p>
+
+<!-- more -->
+
+
+<p>When I go to edit a .rkt file, I end up in Scheme-mode, defined in <code>scheme.el</code>. Is this Geiser? No &mdash; Geiser is the bit that interacts with the REPL, and it&rsquo;s not enabled.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(add-hook 'scheme-mode-hook 'geiser-mode)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Wait, the indicator for Geiser mode is that it says &ldquo;Racket/A&rdquo; in the modeline._Geiser is a minor-mode.</p>
+
+<p>So how do I start a Racket interpreter? <code>M-x run-geiser</code>. It asks me whether I want Racket or Guile. Despite what the manual claims, I can&rsquo;t make that a <em>default</em>. I can make it  <em>the only option</em> by saying there is no Guile to worry about.:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(setq geiser-active-implementations '(racket))</span></code></pre></td></tr></table></div></figure>
+
+
+<p>There appears to be no notion of &ldquo;use a default but allow you to select from options with a <code>C-u</code> prefix&rdquo; which would strike me as a more Emacsy way of doing it. ಠ_ಠ (And it also turns out you can do <code>M-x run-racket</code>.)</p>
+
+<p>Now, the REPL appears with this error:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Welcome to Racket v6.0.1.
+</span><span class='line'>/Users/peter/.emacs.d/elpa/geiser-0.5/scheme/racket/geiser/user.rkt:17:9: collection not found
+</span><span class='line'>  for module path: mzlib/thread
+</span><span class='line'>  collection: "mzlib"
+</span><span class='line'>  in collection directories:
+</span><span class='line'>   /Users/peter/Library/Racket/6.0.1/collects
+</span><span class='line'>   /usr/local/Cellar/plt-racket/6.0.1/share/racket/collects
+</span><span class='line'>   /Users/peter/.emacs.d/elpa/geiser-0.5/scheme/racket/
+</span><span class='line'>  context...:
+</span><span class='line'>   show-collection-err
+</span><span class='line'>   standard-module-name-resolver
+</span><span class='line'>   standard-module-name-resolver</span></code></pre></td></tr></table></div></figure>
+
+
+<p>The first problem this points to is that it&rsquo;s running Racket out of Homebrew, not the mroe complete one I downloaded from the Racket website.</p>
+
+<p>It looks like one is expected to add /Applications/Racket/{bin,man}, etc to one&rsquo;s path(s). I did that in the form of a Homeshick module:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>$ homeshick generate plt-racket
+</span><span class='line'>$ homeshick cd plt-racket
+</span><span class='line'>$ mkdir home/.bashrc_includes
+</span><span class='line'>$ echo 'export PATH=/Applications/Racket\ v6.1/bin:$PATH' &gt; home/.bashrc_includes/racket.sh
+</span><span class='line'>$ homeshick link plt-racket</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Alternately, I think I could have done<code>$ raco pkg install compatibility-lib</code> to fix the error in Homebrew&rsquo;s Racket.</p>
+
+<p>Finally, I&rsquo;ll install racket-mode from ELPA.</p>
+
+<h3>How do I use this thing?</h3>
+
+<p>NowI need to learn the things that I already knew for other Emacs-based REPLS.</p>
+
+<ul>
+<li>How do I load a whole file into the Racket interpreter? <code>C-c C-b</code>?
+
+<ul>
+<li>(Gohd, how do I make keybindings for all the different flavors of Comint more consistent?)</li>
+</ul>
+</li>
+<li>How do I interactively send forms to the Racket interpreter? <code>C-x C-e</code>, same as Emacs lisp.</li>
+<li>How do I switch between more than one instance of Racket interpreter? Uhhhhhh&hellip;..</li>
+<li>&ldquo;Switching between modules&rdquo; seems important somehow. You do it with <code>C-c C-m</code> and <code>C-c C-a</code> in editing buffers.</li>
+<li><code>C-c C-z</code> for &ldquo;jump to REPL&rdquo;, <code>C-c C-a</code> for jump to REPL and switch module.</li>
+</ul>
+
+
+<h3>What about <code>#lang</code> directive?</h3>
+
+<p>Pressing <code>C-c C-b</code> in one of my SICP problem sets got me:</p>
+
+<pre><code>Error: retort-syntax
+
+UNKNOWN::862: read: #lang not enabled in the current context
+  context...:
+   /Applications/Racket v6.1/collects/racket/private/misc.rkt:87:7
+racket@&gt;
+
+Expression evaluated was:
+
+#lang planet neil/sicp
+</code></pre>
+
+<p>This means actually I should use <code>C-c C-a</code>. I knew modules sounded important! Note that this does&rsquo;t auto-save before loading, so I often give a <code>C-x C-s C-c C-a</code> sequence. I cut that out by making it autosave:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(define geiser-buffer-p ()
+</span><span class='line'>  "true if current buffer is a Geiser buffer"
+</span><span class='line'>  geiser-mode)
+</span><span class='line'>;
+</span><span class='line'>(defun geiser-repl-save-some-buffers-and-enter-module ()
+</span><span class='line'>  (interactive)
+</span><span class='line'>  (save-some-buffers t 'geiser-buffer-p)
+</span><span class='line'>  (geiser-mode-switch-to-repl-and-enter))
+</span><span class='line'>;
+</span><span class='line'>(define-key geiser-mode-map (kbd "C-c C-a")
+</span><span class='line'>  'geiser-repl-save-some-buffers-and-enter-module)</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Now how do I get autocompletion?</h3>
+
+<p>Something happens when I press Tab, so far so good.</p>
+
+<h3>And what about documentation!</h3>
+
+<p>Autodoc is enabled and it&rsquo;s like eldoc.
+<code>C-c C-d d</code> for jump to documentation for symbol at point
+<code>C-c C-d i</code> finds it in the Racket manual in your web browser.
+<code>C-c C-d m</code> lists the bindings in a module.</p>
+
+<p>Cool, this is looking like it will work.</p>
+
+<h3>And what about linting / flychecking?</h3>
+
+<p>I turn on flycheck mode? Haven&rsquo;t seen it do anything yet. Ah, there it goes. I want to make it more obtrusive (its error highlights are single characters often.)</p>
+
+<p>Also, as I edit code I&rsquo;m getting this annoyingly big message in the minibuffer:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Checker racket returned non-zero exit code 1, but no errors from output: r5rs:body: no expression in body
+</span><span class='line'>  in: (r5rs:body (define (new-record data) attach-tag data) (define (get-record name) (new-record data)) (define (get-salary record) (quote salary)))
+</span><span class='line'>  context...:
+</span><span class='line'>   /Applications/Racket v6.1/share/pkgs/r5rs-lib/r5rs/main.rkt:335:2
+</span><span class='line'>
+</span><span class='line'>Checker definition probably flawed.</span></code></pre></td></tr></table></div></figure>
+
+
+<p>In other words, one kind of syntax error (no expression on body) is not getting interpreted as an &ldquo;error&rdquo;.</p>
+
+<p>Actually this particular syntax error (at least when writing code in the <code>#lang planet neil/sicp</code> module) is annoying because it won&rsquo;t point you to the line on which error occurs despite it being mostly syntax. Usually turns out to be an &lsquo;if&rsquo; with no clauses, a duplicated paren, or something.</p>
+
+<p>Additionally, the red underline that flycheck puts is misplaced and tiny (it is frequently on an open paren, when it should really be on all of the first sexp inside that paren).</p>
+
+<h3>How about autocomplete in the REPL for symbols defined in my module? How about eldoc for my own definitions?</h3>
+
+<p>This should be possible, right? I&rsquo;m getting &ldquo;end of file during parsing&rdquo; errors. I don&rsquo;t get it. But DrRacket was not autocompleting symbols defined in buffer either.</p>
+
+<p>Autocomplete in REPL does seem to work once I can successfully load the module.</p>
+
+<p>However, there appear to be situations in which the link between Geiser and Racket freezes up.</p>
+
+<h3>What does &ldquo;compile&rdquo; do?</h3>
+
+<p>As far as I can tell, <code>C-c C-k</code> on one of my SICP problemsets pops up a &ldquo;compile&rdquo; buffer with the following contents:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>Compiling /Users/peter/sicp/chap2.4.rkt ...
+</span><span class='line'>
+</span><span class='line'>Error: retort-syntax
+</span><span class='line'>
+</span><span class='line'>(mcons (mcons 'result (mcons "#&lt;void&gt;" '())) (mcons (mcons 'output "") '()))
+</span><span class='line'>racket@chap2.4.rkt&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>&ldquo;Retort-syntax&rdquo;? WTH?</p>
+
+<h3>Navigating errors.</h3>
+
+<p><code>&lt;backtab&gt;</code>  and <tab> navigates errors in the buffer. <code>&lt;tab&gt;</code> also indents or autocompletes symbols. But <code>&lt;tab&gt;</code> from an empty prompt doesn&rsquo;t DWIM &ldquo;go to previous error, then preceding prompt, then next error&rdquo; from an empty prompt, which it should (then I could just tab to the most likely link I want to take, then <code>&lt;return&gt;</code> to follow it, two keystrokes.)</p>
+
+<p>The error links were not always working, and were ugly, so I <a href="2014-09-09-fixing-geiser-racket-repls-error-links.html">spent some time fixing them.</a></p>
+
+<p>This led to error links not actually navigating to the error when I pressed <code>&lt;return&gt;</code>, so I added this to restore that behavior:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(defun geiser-repl--follow-error-or-maybe-send ()
+</span><span class='line'>  (interactive)
+</span><span class='line'>  (if (get-text-property (point) 'compilation-message)
+</span><span class='line'>      (compile-goto-error)
+</span><span class='line'>      (geiser-repl--maybe-send)))
+</span><span class='line'>(define-key geiser-repl-mode-map (kbd "&lt;return&gt;")
+</span><span class='line'>  'geiser-repl--follow-error-or-maybe-send)</span></code></pre></td></tr></table></div></figure>
+
+
+<h3>Set the output syntax</h3>
+
+<p>The &ldquo;write&rdquo; output syntax puts &ldquo;mcons&rdquo; everywhere. In DrRacket, one can choose the &ldquo;write&rdquo; output style to elide the difference between mutable and immutable output cells. How does that work from the REPL? (Answered in <a href="http://stackoverflow.com/questions/25775600/change-output-printing-style-from-racket-repl/25777882?noredirect=1#comment40353857_25777882">Stack Overflow question</a>. How to do this automatically, haven&rsquo;t worked out yet.)</p>
+
+<h3>Improve error display</h3>
+
+<p>To what extent can Racket error output be customized? Sometimes it elides path names with &ldquo;<code>...</code>&rdquo; which is annoying. Other times it elides path names for good.</p>
+
+<h3>Weird issues</h3>
+
+<p>Occasionally in the Geiser REPL I will be unable to use <code>C-a</code> to go to back to the prompt, if point is at the end of buffer. What gives?</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[A Strange Writing Tic]]></title>
+    <link href="http://crowding.github.io/blog/2014/08/23/a-strange-writing-tic/"/>
+    <updated>2014-08-23T17:07:19-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/08/23/a-strange-writing-tic</id>
+    <content type="html"><![CDATA[<p>So I recently read <em>Turing&rsquo;s Cathedral</em> by George Dyson, and then I read <em>Sons of the Profits,</em> and realized they both have the same verbal tic that I found made them hard to keep going with. The problem is that they  have paragrapph and section breaks that leave as much hanging in the air as possible.</p>
+
+<p>This is a technique that, in the right hands, provides some driving force and compellingness to a narrative, but when overused makes a book more difficult to read. The basic structure looks something like this:</p>
+
+<p><em>things about Person A</em>
+<em>Oblique, unexplained reference or injoke about Person B in context</em>
+<em>Paragraph break</em>
+<em>Introduction of Person B</em>
+<em>Explanation of injoke from previous paragraph</em>
+<em>Things person B does</em></p>
+
+<p>Between the end of the last paragraph and the beginning of the next there is a lot hanging in the air.</p>
+
+<p>If you leave off, or attempt to navigate and backtrack the text by paragraph (as is the frigging point of having paragraphs) you either start reading character description, about Person_B with no idea why he was playing a role in the story, or you start wondering why Person A trailed off. Conversely, if you time your preaks in reading between sections (as is also the purpuse of sections) you always end in the unsatisfying note of the last thiung being said making no sense yet.</p>
+
+<p>When_I read a non fiction book, it is usually in smaller chunks, while fiction is often better suited for longer stretches. When read in a stretch these split references add some narrative tension (by momentarily loading up the reader&rsquo;s short term memory with unresolved details), but given a pattern of reading in bits in pieces I found the split references to impede my understanding, always forcing me to back track from that I thought looked like the start of a section. When, it felt like you might on reading this:</p>
+
+<p>Let me try and find some examples rather than being all abstract.:</p>
+
+<p>I could also embed these quotes amid the stream of this text, to simulate taking a break from the writing&hellip;.</p>
+
+<p>As you started the previous paragraph, you probably got a strong sense that you were forgetting something._This may have forced you to go back to the previous block quote, to recall the details of the ideas left</p>
+
+<p>These two books employed this tic in different ways. <em>Sons of the Profits</em> had more or less freestanding chapters, but employed a bridging reference between damn near every subsection, like this. This made it annoyingly hard to find places to break, and correspindingly, hard to recover one&rsquo;s place on resuming (for which one needs to locate enough context to get short one&rsquo;s short term memory loaded.)</p>
+
+<p><em>Turing&rsquo;s  Cathedral</em> committed the opposite offense: each <em>chapter</em> ended with an unresolved reference to a person in the following chapter. An example follows.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Replace Less With Emacs]]></title>
+    <link href="http://crowding.github.io/blog/2014/08/16/replace-less-with-emacs/"/>
+    <updated>2014-08-16T12:31:20-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/08/16/replace-less-with-emacs</id>
+    <content type="html"><![CDATA[<p>I use shell-mode in Emacs a lot (and have never been that taken with Eshell or term-mode). I got tired of seeing this sort of thing:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>dekkera:htlatex-maximal peter$ git log
+</span><span class='line'>WARNING: terminal is not fully functional
+</span><span class='line'>-  (press RETURN)</span></code></pre></td></tr></table></div></figure>
+
+
+<p>It&rsquo;s reasonable for commands that generate a lot of output to go through <code>less</code>, but <code>less</code> works poorly in an Emacs buffer.</p>
+
+<p>However, Emacs itself is quite good at paging. So I wondered if I could make Emacs take over for <code>less</code>. I wrote this shell script <code>emacs-pager</code> and placed it on my <code>$PATH</code>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>#!/bin/bash
+</span><span class='line'>#A script for $PAGER that redirects to an Emacs buffer
+</span><span class='line'>
+</span><span class='line'># get the command line whose output I am paging
+</span><span class='line'>COMMAND=$(echo "$(ps -o 'command=' -p $(ps -o 'ppid=' $$))" | sed -e 's/["\\]/\\&/g' -e 's/["\\]/\\&/g')
+</span><span class='line'>
+</span><span class='line'># make a named fifo
+</span><span class='line'>FIFO=$(mktemp -ut pager.$$)
+</span><span class='line'>mkfifo $FIFO
+</span><span class='line'>
+</span><span class='line'># tell emacs to to read that fifo into a buffer
+</span><span class='line'>read -d '' LISP &lt;&lt;EOF
+</span><span class='line'>(let* ((buf (generate-new-buffer "*${COMMAND}*"))
+</span><span class='line'>       (proc (start-process "PAGER" buf "cat" "$FIFO")))
+</span><span class='line'>   (view-buffer buf 'kill-buffer)
+</span><span class='line'>   ; make sure point stays at top of window while process output accumulates
+</span><span class='line'>   (set-process-filter proc
+</span><span class='line'>     (lambda (proc string)
+</span><span class='line'>       (let ((buf (process-buffer proc))
+</span><span class='line'>             (mark (process-mark proc)))
+</span><span class='line'>       (with-current-buffer buf
+</span><span class='line'>         (let ((buffer-read-only nil))
+</span><span class='line'>           (save-excursion
+</span><span class='line'>             (goto-char mark)
+</span><span class='line'>             (insert string)
+</span><span class='line'>             (ansi-color-apply-on-region mark (point))
+</span><span class='line'>             ; TODO also support backspace overstriking
+</span><span class='line'>             (set-marker mark (point)))))))))
+</span><span class='line'>EOF
+</span><span class='line'>
+</span><span class='line'># echo "$LISP"
+</span><span class='line'>
+</span><span class='line'>emacsclient -e "$LISP"
+</span><span class='line'>
+</span><span class='line'>cat &gt; "$FIFO"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Then I made sure the following was in my <code>init.el</code>:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(server-start)
+</span><span class='line'>(unless (getenv "TERM_PROGRAM")
+</span><span class='line'>  (setenv "TERM" "xterm"))
+</span><span class='line'>(setenv "PAGER" "emacs-pager")</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now when I invoke <code>git log</code> or <code>man</code>, the output appears in a new paging buffer.</p>
+
+<ul>
+<li>Note use of &ldquo;ps&rdquo; to figure out what to call the buffer.</li>
+<li>Note use of <code>printf '%q'</code> to double escape the string that is substituted into Lisp code. (Why did I need double escaping? Shell scripting is terrible is why.)</li>
+<li>The <code>'kill-buffer</code> means that the paging buffer will be deleted when you press &ldquo;q&rdquo;. This is not standard Emacs behavior but I don&rsquo;t want a whole gaggle of temporary buffers laying around.</li>
+<li>The process filter is there just to keep point at the top of the buffer as you receive input.</li>
+<li>There was a weird interaction with Emacs&#8217; builtin <code>M-x man</code> command. I worked around it with:</li>
+</ul>
+
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(defadvice man (around reset-pager activate)
+</span><span class='line'>  "reset PAGER to `less' when getting man pages."
+</span><span class='line'>  (let ((old (getenv "PAGER")))
+</span><span class='line'>    (setenv "PAGER" "less")
+</span><span class='line'>    ad-do-it
+</span><span class='line'>    (setenv "PAGER" old)))</span></code></pre></td></tr></table></div></figure>
+
+
+<ul>
+<li>There is a further problem when running <code>man</code> from the shell, in that <code>man</code> outputs backspace codes for bold/underline and so on. (TODO)</li>
+</ul>
+
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Hevea]]></title>
+    <link href="http://crowding.github.io/blog/2014/07/25/hevea/"/>
+    <updated>2014-07-25T14:55:01-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/07/25/hevea</id>
+    <content type="html"><![CDATA[<p>So I wrote a thesis, using some self-torturing chain of LyX, <a href="http://yihui.name/knitr/">knitr</a>, and a build tool of my own devising. It made a PDF, now I want to make it a webpage.</p>
+
+<p>I tried a few tools, and settled on <a href="http://hevea.inria.fr/">HeVeA</a> as the tool that showed the most promise (as in, &lsquo;it actually generated some HTML for a subset of my files, within a few hours of work&rsquo;). That&rsquo;s not close to &ldquo;working&rdquo; though.</p>
+
+<p>Currently, I&rsquo;m having a problem where a <code>\ref{}</code> is processed correctly by LaTeX, producing a link labeled &ldquo;Figure x&rdquo;, but incorrectly by Hevea, including the entire caption, like so:</p>
+
+<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | &ldquo;title text&rdquo; [&ldquo;alt text&rdquo;]] %}</p>
+
+<p>Disabling the <code>hyperref</code> and <code>refstyle</code> packages didn&rsquo;t do much. I seem to remember also having this problem when using a <code>ref{}</code> to another figure inside of a figure caption but I am not sure how that was resolved.</p>
+
+<p>This is one problem with LaTeX projects, they become hard to troubleshoot. For any two things you want to do in LaTeX, there are four packages offering each, for 16 combinations, each of which will be grossly or subtly incompatible in some way.</p>
+
+<p>In this case, something somewhere is fucking with the generation of reference labels or something. The actual HTML looks like:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;#mov%3Auncrowded&quot;</span><span class="nt">&gt;</span>2.1(demo_circle_6.mov) An example
+</span><span class='line'>motion stimulus similar to those used in my experiments. There are six
+</span><span class='line'>elements, with the carrier motion clockwise and the envelope
+</span><span class='line'>counterclockwise. The envelope motion dominates the subjective
+</span><span class='line'>appearance. figure.caption.2<span class="nt">&lt;/a&gt;</span> shows six elements, so the spacing
+</span><span class='line'>between elements
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>which was constructed from this TeX:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>\ref{mov:uncrowded} shows six elements, so the spacing between elements
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, part of the fuckup is with hyperref? maybe? Next I need to try constructing a minimal example. Luckily I have a minimal example already&hellip;.</p>
+
+<h3>Some time later</h3>
+
+<p>OK so, turns out the inclusion of figure captions in labels was caused by an ill-thought-out line I had written in <code>trouble.hva</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>\renewcommand{\AtBeginDocument}[1]{}
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I had written this to &ldquo;prevent&rdquo; an error that was occurring when <code>hevea</code> was  reading the <code>.aux</code> file, but it also screwed up hyperref. It seems I can&rsquo;t get hyperref to work with hevea, and cleveref.</p>
+
+<h3>Giving up</h3>
+
+<p>After constructing a minimal example, I still couldn&rsquo;t identify a way to make autoref/cleverref references work.</p>
+
+<h2>Tex4ht</h2>
+
+<p>Someone suggested that <code>tex4ht</code> might work better than <code>hevea</code>, and at least it correctly processed my minimal example. That doen&rsquo;t mean it&rsquo;ll process the the whole thesis, though.</p>
+
+<p>The first problem is:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>--- warning --- Can&#39;t find/open file `introduction_chapter.dvi&#39;
+</span><span class='line'>--- error --- Can&#39;t find/open file `introduction_chapter.dvi&#39;
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Which was because I was using <code>tex4ht</code> and not <code>htlatex</code>. Using <code>htlatex</code> I instead get:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>! I can&#39;t find file `introduction_chapter.html&#39;.
+</span><span class='line'><span class="nt">&lt;to</span> <span class="na">be</span> <span class="na">read</span> <span class="na">again</span><span class="nt">&gt;</span>
+</span><span class='line'>                   \relax
+</span><span class='line'>l.79 \begin{document}
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Which is odd since that command is actually supposed to be making the file!</p>
+
+<p>So it must be failing at an earlier stage?</p>
+]]></content>
+  </entry>
   
   <entry>
     <title type="html"><![CDATA[iTunes Library Manipulation With Python]]></title>
@@ -251,14 +1045,14 @@
     <id>http://crowding.github.io/blog/2014/04/26/actually-create-a-bootable-linux-usb-key-for-mac</id>
     <content type="html"><![CDATA[<p>I wanted to install Linux on a partition on an older (2008) Macbook Pro. It has no working CD drive. In fact having no CD drive is an accelerating trend these days.</p>
 
-<p>Now the Ubuntu site has <a href="http://www.ubuntu.com/download/desktop/create-a-usb-stick-on-mac-osx">instructions</a> for making a bootable USB stick. These instructions don&rsquo;t work on my machine. Nonetheless [contrary to some reports], it is completely possible to boot EFI machines off a USB stick. For example, just imaging the OS X installer DVD to a USB key using Disk Utility results in a bootable key. So something is not right with the Ubuntu image or instructions.</p>
+<p>Now the Ubuntu site has <a href="http://www.ubuntu.com/download/desktop/create-a-usb-stick-on-mac-osx">instructions</a> for making a bootable USB stick. These instructions don&rsquo;t work on my machine. Nonetheless [contrary to some reports], it is completely possible to boot this machine off a USB stick. For example, just imaging the OS X installer DVD to a USB key using Disk Utility results in a bootable key. So something is not right with the Ubuntu image or instructions.</p>
 
 <p><a href="http://sevenbits.github.io/Mac-Linux-USB-Loader/">this did not work</a>
 <a href="http://penguintosh.com/about/">this did not even run</a>
 <a href="http://tillmail.de/wordpress/436">this did not work at first either</a> (even the special boot loader)
 installing <a href="">rEFIt</a> gave no boot menu.</p>
 
-<p>So here are directions that actually work.</p>
+<p>So here are directions that actually work. Or at least record my progress</p>
 
 <p>Install rEFIt, but then I ran the <code>enable_always.sh</code> command, and I finally saw a boot menu on startup, and it detected the EFI file on the USB stick.</p>
 
@@ -277,9 +1071,43 @@ installing <a href="">rEFIt</a> gave no boot menu.</p>
 </span></code></pre></td></tr></table></div></figure>
 
 
-<p>Er, no, it looks like I can&rsquo;t actually make this boot an .iso image from the command line. (and the other &ldquo;Linux USB Creator&rdquo; apps installed boot.efi files that gave &ldquo;unsupported&rdquo; errors. So the thing to do is to extract the contents of the .iso and see if GRUB works that way.</p>
+<p>Er, no, it looks like I can&rsquo;t actually make GRUB boot an .iso image off a USB disk from the command line. It (and the other &ldquo;Linux USB Creator&rdquo; apps installed boot.efi files that gave &ldquo;unsupported&rdquo; errors. So the thing to do is to extract the contents of the .iso and see if GRUB works with that.</p>
 
-<p>Is it possible to create a bootable Linux key without rEFIt on the main drive? Maybe by putting rEFIt in the key. Not sure though.</p>
+<p>So:</p>
+
+<h2>New attempt</h2>
+
+<p>I tried to mount the ISO to copy off the filesystem, but ISO was of course an ext filesystem unsupported on OS X I tried briefly to mount the thing using FUSE but I don&rsquo;t know how to do an ISO that way. So I loaded up an Ubuntu VM under VirtualBox, and Ubuntu&rsquo;s Startup Disk Creator utility extracted the ISO to a FAT filesystem key for me (had to try a couple of different keys to find one that that didn&rsquo;t freeze the VM_on startup though)</p>
+
+<p>Booting Mounting this in the mac again, I found rEFIT was able to see the USB key. Also, the builtin startup menu saw the ket without need for rEFIt. But now I&rsquo;ve got an &ldquo;unsupported operation&rdquo; again when I actually try to boot the files. Closer though. So next I&rsquo;ll copy over the GRUB that (sort of worked)[<a href="http://tillmail.de/wordpress/436">http://tillmail.de/wordpress/436</a>] and</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>root (hd0,msdos1)
+</span><span class='line'>configfile /boot/grub/grub.config</span></code></pre></td></tr></table></div></figure>
+
+
+<p>got me into a GRUB menu. Any of the options past the menu led to a blank screen though. Crud.</p>
+
+<p>(eta: this may be due to the grub.config having references to <code>/cdrom</code> instead of the usb)</p>
+
+<p>I tried again with a Mint installer. Mint wouldn&rsquo;t even boot in VirtualBox so I made the Mint usbkey using Ubuntu&rsquo;s startup disk creator again.</p>
+
+<p>FINALLY, starting Mint in &ldquo;compatibility mode&rdquo; did something and I see Linux kernel messages. Seems to freeze after a while though, in the middle of something&hellip; and now I see that &ldquo;blank screen&rdquo; on startup really means &ldquo;kernel hasn&rsquo;t figured out the video&rdquo;</p>
+
+<p>What could I try next? Maybe install the live image as a partition? I think I&rsquo;m getting through the USB hurdle though?</p>
+
+<p>Next I tried &ldquo;unetbootin.&rdquo; Mac version was unresponsive so tried on Ubuntu virtualbox.</p>
+
+<p>Should also try starting with a 10.10 .iso. because apparently compatibility decreases over time.</p>
+
+<p>Okay, so booting using rEFIt as a &ldquo;legacy OS&rdquo; off of USB using the 10.10 ISO did not work. Nor did copying the contents of the USB stick to a new partition.</p>
+
+<p>Next I will try making a Mint ISO again with a different kernel?</p>
+
+<p>Or Debian &ldquo;Lenny&rdquo; since <a href="http://fieldeffect.info/w/MacBookProUSB">this person</a> seems to have had success&hellip;.</p>
+
+<h3>Failure threshold approaching</h3>
 ]]></content>
   </entry>
   
@@ -347,52 +1175,6 @@ installing <a href="">rEFIt</a> gave no boot menu.</p>
 
 
 <p>Upon booting I got some errors about &ldquo;<code>disagrees about version of symbol module_layout</code>&rdquo;. This made no sense, as modinfo showed the same version as <code>uname -a</code>, but then I added <code>gcc</code> to the <code>make-modules-install</code> option (this had previously ended in &ldquo;<code>-</code>&rdquo; like I would have expected), and made sure all modules were owned and writable only by root. That combination appeared to work (I was less than scientific in doing both at once.)</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Compiling a Raspberry Pi Kernel via Ubuntu]]></title>
-    <link href="http://crowding.github.io/blog/2014/04/16/compiling-a-raspberry-pi-kernel-via-ubuntu/"/>
-    <updated>2014-04-16T00:00:00-07:00</updated>
-    <id>http://crowding.github.io/blog/2014/04/16/compiling-a-raspberry-pi-kernel-via-ubuntu</id>
-    <content type="html"><![CDATA[<table>
-<tbody>
-<tr class="odd">
-<td align="left">layout: post</td>
-</tr>
-<tr class="even">
-<td align="left">title: &quot;Compiling a Raspberry Pi Kernel via Ubuntu&quot;</td>
-</tr>
-<tr class="odd">
-<td align="left">date: 2014-04-16 12:42:41 -0700</td>
-</tr>
-<tr class="even">
-<td align="left">comments: true</td>
-</tr>
-<tr class="odd">
-<td align="left">categories:</td>
-</tr>
-</tbody>
-</table>
-<p><a href="2014-04-15-compiling-a-raspberry-pi-kernel-on-osx">Previously</a>, I set up a crosstools-NG build environment on OSX and then tried to compile a kernel. The kernel compilation process was a bit much to adjust to. Easier to just install Ubuntu in a VirtualBox image and do compilation there.</p>
-<p>After installing Ubuntu on the image, I did (mostly via <a href="http://raspberrypi.stackexchange.com/questions/192/how-do-i-cross-compile-the-kernel-on-a-ubuntu-host">this stackexchange answer</a>):</p>
-<pre><code>sudo apt-get install git ncurses-dev make gcc-arm-linux-gnueabi</code></pre>
-<pre><code>git clone https://github.com/petli/linux.git -b rpi-3.10-usb-sound-backport raspi-linux</code></pre>
-<pre><code>cd raspi-linux
-ssh pi@raspberrypi.local zcat /proc/config.gz &gt; .config</code></pre>
-<p>Note that I had to set VirtualBox to &quot;bridged adapter&quot; mode in order to see the &#8216;local&#8217; devices on the network.</p>
-<pre><code>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- oldconfig</code></pre>
-<pre><code>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- menuconfig</code></pre>
-<pre><code>make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- -j8
-make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi- modules -j8</code></pre>
-<p>NB. I configured VirtualBox to see as 8 cores for <code>-jN</code> to produce a speedup.</p>
-<p>That&#8230;. was straightforward.</p>
-<p>Now to install it on the Pi. I&#8217;ll just take my SD card and mount it on the Ubuntu host for this. This required installing the VirtualBox Extension Pack. And using a USB SD card reader since I couldn&#8217;t figure out how to work the Mac&#8217;s builtin reader in VirtualBox.</p>
-<pre><code>mv /media/BOOT/kernel.img /media/BOOT/kernel_old.img
-cp arch/arm/boot/Image /media/BOOT/kernel.img
-make ARCH=arm CROSS_COMPILE=/usr/bin/arm-linux-gnueabi-  INSTALL_MOD_PATH=~/modules modules_install
-sudo cp -r ~/modules/lib/* /media/root/lib/</code></pre>
-<p>Upon booting I got some errors about &quot;<code>disagrees about version of symbol module_layout</code>&quot;. This made no sense, as modinfo showed the same version as <code>uname -a</code>, but then I added <code>gcc</code> to the <code>make-modules-install</code> option (this had previously ended in &quot;<code>-</code>&quot; like I would have expected), and made sure all modules were owned and writable only by root. That combination appeared to work (I was less than scientific in doing both at once.)</p>
 ]]></content>
   </entry>
   
@@ -591,110 +1373,6 @@ sudo cp -r ~/modules/lib/* /media/root/lib/</code></pre>
 
 <p>&hellip;. oh but adjusting Linux enough to compile in an OSX environment is going to be bad. gonna investigate just installing an Ubuntu VM under VirtualBox and compiling there</p>
 
-<p>honestly a kernel compile on the Pi itself would have finished by now</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Compiling a Raspberry Pi Kernel on Osx]]></title>
-    <link href="http://crowding.github.io/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx/"/>
-    <updated>2014-04-15T00:00:00-07:00</updated>
-    <id>http://crowding.github.io/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx</id>
-    <content type="html"><![CDATA[<table>
-<tbody>
-<tr class="odd">
-<td align="left">layout: post</td>
-</tr>
-<tr class="even">
-<td align="left">title: &quot;(not) Compiling a Raspberry Pi kernel on OSX&quot;</td>
-</tr>
-<tr class="odd">
-<td align="left">date: 2014-04-15 00:53:35 -0700</td>
-</tr>
-<tr class="even">
-<td align="left">comments: true</td>
-</tr>
-<tr class="odd">
-<td align="left">categories: technote failure</td>
-</tr>
-</tbody>
-</table>
-<p>One thing leads to another and suddenly you want to compile a new Raspberry Pi kernel, and your most convenient host is a Mac.</p>
-<p>I started with <a href="http://www.jaredwolff.com/blog/cross-compiling-on-mac-osx-for-raspberry-pi/">some existing notes</a> about this &#8211; but I found they needed some tweaking and some updates have happened which make things a little easier.</p>
-<p>I&#8217;m using crosstool-ng from Homebrew on OS X 10.9.</p>
-<h1 id="instructions">Instructions</h1>
-<h2 id="install-packages">Install packages</h2>
-<p>These are the packages I needed from Homebrew.</p>
-<pre><code>brew tap homebrew/versions
-brew install gcc48
-brew install crosstool-ng
-brew tap homebrew/dupes
-brew install grep
-brew install gettext
-brew link --force gettext
-brew install ncurses
-brew link --force ncurses</code></pre>
-<p>Note that <code>link --force</code> is not a particularly nice thing to do, and will (e.g.) prevent you from reinstalling crosstool-ng without uninstalling gettext first. But it appears to be necessary, as eglibc build fails without it (and I don&#8217;t understand if there&#8217;s an option that will let me specity gettext&#8217;s location to eglibc)</p>
-<h2 id="make-crosstools-use-gnu-grep">Make crosstools use GNU grep</h2>
-<pre><code>chmod u+w /usr/local/Cellar/crosstool-ng/1.19.0/lib/ct-ng.1.19.0/paths.sh</code></pre>
-<p>Edit <code>paths.sh</code>, changing the line about <code>grep</code> to read:</p>
-<pre><code>export grep=&quot;/usr/local/bin/ggrep&quot;</code></pre>
-<p>(Is there a user-level config way to do this w/o poking around in the Homebrew cellar?)</p>
-<h2 id="create-disk-images">Create disk images</h2>
-<p>Crosstools needs case-sensitive file systems to work on, we&#8217;ll create two images, one to compile in and one to host the binaries.</p>
-<pre><code>cd ~
-mkdir xtools-images
-cd xtools-images
-hdiutil create -size 6g \
-   -attach -type SPARSE -fs &#39;Case-sensitive Journaled HFS+&#39; \
-   -volname xtools-build-env xtools-build-env
-hdiutil create -size 500m \
-   -attach -type SPARSE -fs &#39;Case-sensitive Journaled HFS+&#39; \
-   -volname xtools xtools</code></pre>
-<h2 id="set-up-crosstools-ng">Set up crosstools-ng</h2>
-<p>Thanks to <a href="https://github.com/Kentzo/armv6-rpi-linux-gnueabihf">Kentzo</a> there is a Raspberry Pi configuration already in <code>crosstools-ng</code> in Homebrew, and there only need minor adjustments.</p>
-<pre><code>cd /Volumes/xtools-build-env/
-ct-ng armv6-rpi-linux-gnueabi</code></pre>
-<p>Now extract this repository onto the drive image. It contains a <code>.config</code> file and a couple of patches.</p>
-<pre><code>git clone homeGit/peter/raspberry-pi-osx-crosstools-config .</code></pre>
-<p>Then inspect the configuration:</p>
-<pre><code>ct-ng menuconfig</code></pre>
-<p>Check that all the paths under &quot;Paths&quot; point to somewhere logical (mounted on your disk images)</p>
-<p>For extra speed, set &quot;Paths::Build behavior::number of parallel jobs&quot; to twice your number of cores. This also means you will need to also up the <code>ulimit</code> before building. (If there are weird errors about no rules to make targets related to language localization, you probably forgot to do this.) So now do</p>
-<pre><code>ulimit -n 1024
-ct-ng build</code></pre>
-<p>Hopefully this will work.</p>
-<h2 id="test-the-compiler">Test the compiler</h2>
-<pre><code>cat &gt; test.c
-#include &lt;stdio.h&gt;
-int main() { printf(&quot;Hello, world!\n&quot;); return 0; }</code></pre>
-<p>(press ctrl-d to finish)</p>
-<pre><code>/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi-gcc -o test test.c</code></pre>
-<p>Copy <code>test</code> over to your RPi and try running it.</p>
-<pre><code>scp test pi@raspberrypi.local:
-ssh pi@raspberrypi.local /home/pi/test</code></pre>
-<h1 id="compiling-a-kernel">Compiling a Kernel</h1>
-<p>Well this is what I signed up for.</p>
-<p>I wanted to build the kernel described <a href="https://github.com/petli/linux/tree/rpi-3.10-usb-sound-backport">here</a>.</p>
-<p>I&#8217;m cribbing from <a href="http://akanto.wordpress.com/2012/09/25/cross-compiling-kernel-for-raspberry-pi-on-fedora-17-part-1/">these</a> notes.</p>
-<pre><code>cd /Volumes/xtools-build-env/
-git clone https://github.com/petli/linux.git -b rpi-3.10-usb-sound-backport</code></pre>
-<p>Copy the existing config.</p>
-<pre><code>scp pi@raspberrypi.local:/proc/config.gz ./linux-config.gz
-gunzip linux-config.gz
-cp linux-config linux/.config</code></pre>
-<pre><code>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- oldconfig</code></pre>
-<p><code>menuconfig</code> doersn&#8217;t work for me because of some <code>ncurses</code> problem but there is <code>make nconfig</code></p>
-<pre><code>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig</code></pre>
-<pre><code>make ARCH=arm CROSS_COMPILE=/Volumes/xtools/armv6-rpi-linux-gnueabi/bin/armv6-rpi-linux-gnueabi- nconfig</code></pre>
-<p>Now it is complaining about lack of &quot;elf.h&quot; Where is it looking for elf.h?</p>
-<pre><code>sudo cp ../elf.h ../elftypes.h /usr/include
- 
-brew install libelf
-sudo ln -s /usr/local/include/libelf /usr/include/libelf</code></pre>
-<p>&#8230; and some other advice from the internet, which didn&#8217;t work either. It&#8217;s not the &#8216;echo&#8217; problem, as that&#8217;s been long fixed.</p>
-<h1 id="giving-up-threshold-reached">Giving up threshold reached</h1>
-<p>&#8230;. oh but adjusting Linux enough to compile in an OSX environment is going to be bad. gonna investigate just installing an Ubuntu VM under VirtualBox and compiling there</p>
 <p>honestly a kernel compile on the Pi itself would have finished by now</p>
 ]]></content>
   </entry>

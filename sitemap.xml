@@ -28,18 +28,6 @@
     </url>
     <url>
         <loc>
-            http://crowding.github.io/blog/2014/04/15/compiling-a-raspberry-pi-kernel-on-osx/
-        </loc>
-        <lastmod>2014-04-16T13:05:06-07:00</lastmod>
-    </url>
-    <url>
-        <loc>
-            http://crowding.github.io/blog/2014/04/16/compiling-a-raspberry-pi-kernel-via-ubuntu/
-        </loc>
-        <lastmod>2014-04-16T19:28:48-07:00</lastmod>
-    </url>
-    <url>
-        <loc>
             http://crowding.github.io/blog/2014/04/16/compiling-a-raspberry-pi-kernel-via-ubuntu/
         </loc>
         <lastmod>2014-04-16T19:28:48-07:00</lastmod>
@@ -48,7 +36,7 @@
         <loc>
             http://crowding.github.io/blog/2014/04/26/actually-create-a-bootable-linux-usb-key-for-mac/
         </loc>
-        <lastmod>2014-04-28T14:01:26-07:00</lastmod>
+        <lastmod>2014-06-18T13:50:33-07:00</lastmod>
     </url>
     <url>
         <loc>http://crowding.github.io/blog/2014/04/28/un-pause-programs-in-os-x/</loc>
@@ -75,8 +63,40 @@
         <lastmod>2014-05-21T12:14:21-07:00</lastmod>
     </url>
     <url>
+        <loc>http://crowding.github.io/blog/2014/07/25/hevea/</loc>
+        <lastmod>2014-09-23T22:42:22-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://crowding.github.io/blog/2014/08/16/replace-less-with-emacs/</loc>
+        <lastmod>2014-08-29T16:04:49-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://crowding.github.io/blog/2014/08/23/a-strange-writing-tic/</loc>
+        <lastmod>2014-08-23T17:08:32-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://crowding.github.io/blog/2014/09/05/get-emacs-set-up-for-racket/</loc>
+        <lastmod>2014-09-23T22:17:04-07:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://crowding.github.io/blog/2014/09/09/editing-regexes-interactively-in-emacs/
+        </loc>
+        <lastmod>2014-09-23T22:26:59-07:00</lastmod>
+    </url>
+    <url>
+        <loc>
+            http://crowding.github.io/blog/2014/09/09/fixing-geiser-racket-repls-error-links/
+        </loc>
+        <lastmod>2014-09-23T22:48:18-07:00</lastmod>
+    </url>
+    <url>
+        <loc>http://crowding.github.io/blog/2014/09/20/racket-and-flycheck-mode/</loc>
+        <lastmod>2014-09-20T17:55:32-07:00</lastmod>
+    </url>
+    <url>
         <loc>http://crowding.github.io/blog/archives/</loc>
-        <lastmod>2014-05-21T12:14:21-07:00</lastmod>
+        <lastmod>2014-09-23T22:48:18-07:00</lastmod>
     </url>
     <url>
         <loc>http://crowding.github.io/hosting-git-on-your-user-account/</loc>
@@ -84,7 +104,7 @@
     </url>
     <url>
         <loc>http://crowding.github.io/</loc>
-        <lastmod>2014-05-21T12:14:21-07:00</lastmod>
+        <lastmod>2014-09-23T22:48:18-07:00</lastmod>
     </url>
     <url>
         <loc>http://crowding.github.io/keynote-notes/</loc>

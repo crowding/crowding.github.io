@@ -1,0 +1,442 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Fixing Geiser-racket-repl's Error Links - Illusory stillness</title>
+  <meta name="author" content="Peter Meilstrup">
+
+  
+  <meta name="description" content="Geiser REPL mode is pretty good, but man the error links were (a) broken and (b) eyewatering. Here&rsquo;s an example: Error processing input, &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://crowding.github.io/blog/2014/09/09/fixing-geiser-racket-repls-error-links">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Illusory stillness" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Illusory stillness</a></h1>
+  
+    <h2>mumble mumble techblog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:crowding.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Fixing Geiser-racket-repl's Error Links</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-09T22:36:52-07:00" pubdate data-updated="true">2014-09-09</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>Geiser REPL mode is pretty good, but man the error links were (a) broken and (b) eyewatering. Here&rsquo;s an example:</p>
+
+<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | &ldquo;title text&rdquo; [&ldquo;alt text&rdquo;]] %}</p>
+
+<p>I mean, are there error messages somewhere in all those pathnames and red?</p>
+
+<p>After some fussing I got it to look better.</p>
+
+<!-- more -->
+
+
+<h3>The fussing</h3>
+
+<p>Anyway, the fontification for errors is hideously wrong: error <em>message</em> should be eyewatering, <em>full path to file</em> should be muted (except for maybe the basename.)</p>
+
+<p>It&rsquo;s seriously impeding my ability to read, so let&rsquo;s&hellip;.</p>
+
+<p>Actually this is a similar problem as with flycheck, perhaps? Let&rsquo;s find the fontification problem first.</p>
+
+<p>&hellip; this is harder than I thought. Why, when I <code>(setq font-lock-keywords nil)</code> then <code>(font-lock-fontify-buffer)</code>, does it
+not clear fontification? Ah. I want <code>(font-lock-defontify)</code> No wait, I
+actually want <code>(font-lock-unfontify-buffer)</code>. And that makes it clear
+that the underlines links are not coming from fontity-buffer. Are they
+coming from compilation-mode somehow? Okay, so <code>geiser-repl-mode</code>
+calls <code>(compilation-setup)</code> to enter <code>compilation-shell-minor-mode</code> We
+have <code>compilation-font-lock-keywords</code> which doesn&rsquo;t seem to have the
+keywords.</p>
+
+<p>Ah! It&rsquo;s <code>compilation-error-regexp-alist</code>.</p>
+
+<p>After <a href="2014-09-09-editing-regexes-interactively-in-emacs.html">some futzing around with regex-builder and structured regexes</a> I came to a number of different regexes, like so:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+<span class='line-number'>52</span>
+<span class='line-number'>53</span>
+<span class='line-number'>54</span>
+<span class='line-number'>55</span>
+<span class='line-number'>56</span>
+<span class='line-number'>57</span>
+<span class='line-number'>58</span>
+<span class='line-number'>59</span>
+<span class='line-number'>60</span>
+<span class='line-number'>61</span>
+<span class='line-number'>62</span>
+<span class='line-number'>63</span>
+<span class='line-number'>64</span>
+<span class='line-number'>65</span>
+<span class='line-number'>66</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(defadvice geiser-repl--startup (after pbm-geiser-repl-errors activate)
+</span><span class='line'>  (message "setting up geiser repl error highlighting")
+</span><span class='line'>  (set (make-local-variable 'compilation-error-regexp-alist)
+</span><span class='line'>       `(
+</span><span class='line'>         ;; &lt;path&gt;:line:col: error message
+</span><span class='line'>         ;; &lt;path&gt;: [not a function name]
+</span><span class='line'>         (,(rx (seq bol
+</span><span class='line'>                    (or "" "   ")
+</span><span class='line'>                    (group-n 1
+</span><span class='line'>                             (one-or-more (not (any ":\n \t&gt;")))
+</span><span class='line'>                             (zero-or-more (not (any ":\n\t&gt;"))))
+</span><span class='line'>                    ": "
+</span><span class='line'>                    (group-n 2 (seq "[" (minimal-match (one-or-more anything)) "]"))))
+</span><span class='line'>          1 nil nil 0 1
+</span><span class='line'>          (1 file-name-shadow-properties)
+</span><span class='line'>          (2 file-name-shadow-properties))
+</span><span class='line'>         ;; &lt;path&gt;:&lt;line&gt;:&lt;col&gt;: &lt;function-name&gt;
+</span><span class='line'>         (,(rx (seq bol
+</span><span class='line'>                    (or "" "   ")
+</span><span class='line'>                    (group-n 1
+</span><span class='line'>                             (one-or-more (not (any ":\n \t&gt;")))
+</span><span class='line'>                             (zero-or-more (not (any ":\n\t&gt;"))))
+</span><span class='line'>                    ":" (group-n 2 (one-or-more digit))
+</span><span class='line'>                    ":" (group-n 3 (one-or-more digit))
+</span><span class='line'>                    ": "
+</span><span class='line'>                    (group-n 4 (one-or-more (any word "-_~!/@$%^&&lt;&gt;{}?")))
+</span><span class='line'>                    eol))
+</span><span class='line'>          1 2 3 0 1
+</span><span class='line'>          (1 file-name-shadow-properties)
+</span><span class='line'>          (4 font-lock-function-name-face))
+</span><span class='line'>         ;; &lt;path&gt;:line:col: error message
+</span><span class='line'>         (,(rx (seq bol
+</span><span class='line'>                    (or "" "   ")
+</span><span class='line'>                    (group-n 1
+</span><span class='line'>                             (one-or-more (not (any ":\n \t&gt;")))
+</span><span class='line'>                             (zero-or-more (not (any ":\n\t&gt;"))))
+</span><span class='line'>                    ":" (group-n 2 (one-or-more digit))
+</span><span class='line'>                    ":" (group-n 3 (one-or-more digit))
+</span><span class='line'>                    ": "
+</span><span class='line'>                    (group-n 4 (minimal-match (one-or-more anything)))
+</span><span class='line'>                    eol))
+</span><span class='line'>          1 2 3 2 1
+</span><span class='line'>          (1 file-name-shadow-properties)
+</span><span class='line'>          (4 compilation-error-face))
+</span><span class='line'>         ;; &lt;function-name&gt;: &lt;error-message&gt;
+</span><span class='line'>         (,(rx (seq bol
+</span><span class='line'>                    (or "" "   ")
+</span><span class='line'>                    (group-n 1 (one-or-more (any word "-_~!/@$%^&&lt;&gt;{}?.")))
+</span><span class='line'>                    (group-n 2 "")
+</span><span class='line'>                    ": "
+</span><span class='line'>                    (group-n 3 (minimal-match (one-or-more anything)))
+</span><span class='line'>                    eol))
+</span><span class='line'>          nil nil nil 2 2
+</span><span class='line'>          (1 font-lock-function-name-face)
+</span><span class='line'>          (3 compilation-error-face))
+</span><span class='line'>         ;; &lt;path&gt;:&lt;line&gt;:&lt;col&gt;
+</span><span class='line'>         (,(rx (seq bol
+</span><span class='line'>                    (or "" "   ")
+</span><span class='line'>                    (group-n 1
+</span><span class='line'>                             (one-or-more (not (any ":\n \t&gt;")))
+</span><span class='line'>                             (zero-or-more (not (any ":\n\t&gt;"))))
+</span><span class='line'>                    ":" (group-n 2 (zero-or-more digit))
+</span><span class='line'>                    ":" (group-n 3 (zero-or-more digit))
+</span><span class='line'>                    eol))
+</span><span class='line'>          1 2 3 0 1
+</span><span class='line'>          (1 file-name-shadow-properties)))))</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Which looks much better:</p>
+
+<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | &ldquo;title text&rdquo; [&ldquo;alt text&rdquo;]] %}</p>
+
+<p>Ah, see, the actual error message is highlighted, and the pile of linked pathnames is muted.</p>
+
+<p>It&rsquo;s not perfect but it&rsquo;s a definite improvement.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Peter Meilstrup</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-09-09T22:36:52-07:00" pubdate data-updated="true">2014-09-09</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/emacs/'>emacs</a>, <a class='category' href='/blog/categories/racket/'>racket</a>, <a class='category' href='/blog/categories/technote/'>technote</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://crowding.github.io/blog/2014/09/09/fixing-geiser-racket-repls-error-links/" data-via="perisaccadic" data-counturl="http://crowding.github.io/blog/2014/09/09/fixing-geiser-racket-repls-error-links/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/09/09/editing-regexes-interactively-in-emacs/" title="Previous Post: Editing structured regexes interactively in Emacs">&laquo; Editing structured regexes interactively in Emacs</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/09/20/racket-and-flycheck-mode/" title="Next Post: Racket and flycheck-mode">Racket and flycheck-mode &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/09/20/racket-and-flycheck-mode/">Racket and Flycheck-mode</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/09/fixing-geiser-racket-repls-error-links/">Fixing Geiser-racket-repl's Error Links</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/09/editing-regexes-interactively-in-emacs/">Editing Structured Regexes Interactively in Emacs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/05/get-emacs-set-up-for-racket/">Get Emacs Set Up for Racket</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/23/a-strange-writing-tic/">A Strange Writing Tic</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/crowding">@crowding</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'crowding',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>My Pinboard</h1>
+  <ul id="pinboard_linkroll">Fetching linkroll...</ul>
+  <p><a href="http://pinboard.in/u:crowding">My Pinboard Bookmarks &raquo;</a></p>
+</section>
+<script type="text/javascript">
+  var linkroll = 'pinboard_linkroll'; //id target for pinboard list
+  var pinboard_user = "crowding"; //id target for pinboard list
+  var pinboard_count = 3; //id target for pinboard list
+  (function(){
+    var pinboardInit = document.createElement('script');
+    pinboardInit.type = 'text/javascript';
+    pinboardInit.async = true;
+    pinboardInit.src = '/javascripts/pinboard.js';
+    document.getElementsByTagName('head')[0].appendChild(pinboardInit);
+  })();
+</script>
+
+
+<section class="twitter">
+  <a class="twitter-timeline" href="https://twitter.com/perisaccadic" data-widget-id="448287882478764032">Tweets by @perisaccadic</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Peter Meilstrup -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

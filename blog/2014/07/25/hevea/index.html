@@ -1,0 +1,351 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>Hevea - Illusory stillness</title>
+  <meta name="author" content="Peter Meilstrup">
+
+  
+  <meta name="description" content="So I wrote a thesis, using some self-torturing chain of LyX, knitr, and a build tool of my own devising. It made a PDF, now I want to make it a &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://crowding.github.io/blog/2014/07/25/hevea">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Illusory stillness" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+
+  
+
+</head>
+
+<body   >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Illusory stillness</a></h1>
+  
+    <h2>mumble mumble techblog</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="https://www.google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:crowding.github.io" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">Hevea</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-07-25T14:55:01-07:00" pubdate data-updated="true">2014-07-25</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>So I wrote a thesis, using some self-torturing chain of LyX, <a href="http://yihui.name/knitr/">knitr</a>, and a build tool of my own devising. It made a PDF, now I want to make it a webpage.</p>
+
+<p>I tried a few tools, and settled on <a href="http://hevea.inria.fr/">HeVeA</a> as the tool that showed the most promise (as in, &lsquo;it actually generated some HTML for a subset of my files, within a few hours of work&rsquo;). That&rsquo;s not close to &ldquo;working&rdquo; though.</p>
+
+<p>Currently, I&rsquo;m having a problem where a <code>\ref{}</code> is processed correctly by LaTeX, producing a link labeled &ldquo;Figure x&rdquo;, but incorrectly by Hevea, including the entire caption, like so:</p>
+
+<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | &ldquo;title text&rdquo; [&ldquo;alt text&rdquo;]] %}</p>
+
+<p>Disabling the <code>hyperref</code> and <code>refstyle</code> packages didn&rsquo;t do much. I seem to remember also having this problem when using a <code>ref{}</code> to another figure inside of a figure caption but I am not sure how that was resolved.</p>
+
+<p>This is one problem with LaTeX projects, they become hard to troubleshoot. For any two things you want to do in LaTeX, there are four packages offering each, for 16 combinations, each of which will be grossly or subtly incompatible in some way.</p>
+
+<p>In this case, something somewhere is fucking with the generation of reference labels or something. The actual HTML looks like:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;#mov%3Auncrowded&quot;</span><span class="nt">&gt;</span>2.1(demo_circle_6.mov) An example
+</span><span class='line'>motion stimulus similar to those used in my experiments. There are six
+</span><span class='line'>elements, with the carrier motion clockwise and the envelope
+</span><span class='line'>counterclockwise. The envelope motion dominates the subjective
+</span><span class='line'>appearance. figure.caption.2<span class="nt">&lt;/a&gt;</span> shows six elements, so the spacing
+</span><span class='line'>between elements
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>which was constructed from this TeX:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>\ref{mov:uncrowded} shows six elements, so the spacing between elements
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, part of the fuckup is with hyperref? maybe? Next I need to try constructing a minimal example. Luckily I have a minimal example already&hellip;.</p>
+
+<h3>Some time later</h3>
+
+<p>OK so, turns out the inclusion of figure captions in labels was caused by an ill-thought-out line I had written in <code>trouble.hva</code>:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>\renewcommand{\AtBeginDocument}[1]{}
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>I had written this to &ldquo;prevent&rdquo; an error that was occurring when <code>hevea</code> was  reading the <code>.aux</code> file, but it also screwed up hyperref. It seems I can&rsquo;t get hyperref to work with hevea, and cleveref.</p>
+
+<h3>Giving up</h3>
+
+<p>After constructing a minimal example, I still couldn&rsquo;t identify a way to make autoref/cleverref references work.</p>
+
+<h2>Tex4ht</h2>
+
+<p>Someone suggested that <code>tex4ht</code> might work better than <code>hevea</code>, and at least it correctly processed my minimal example. That doen&rsquo;t mean it&rsquo;ll process the the whole thesis, though.</p>
+
+<p>The first problem is:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>--- warning --- Can&#39;t find/open file `introduction_chapter.dvi&#39;
+</span><span class='line'>--- error --- Can&#39;t find/open file `introduction_chapter.dvi&#39;
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Which was because I was using <code>tex4ht</code> and not <code>htlatex</code>. Using <code>htlatex</code> I instead get:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+</pre></td><td class='code'><pre><code class='html'><span class='line'>! I can&#39;t find file `introduction_chapter.html&#39;.
+</span><span class='line'><span class="nt">&lt;to</span> <span class="na">be</span> <span class="na">read</span> <span class="na">again</span><span class="nt">&gt;</span>
+</span><span class='line'>                   \relax
+</span><span class='line'>l.79 \begin{document}
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Which is odd since that command is actually supposed to be making the file!</p>
+
+<p>So it must be failing at an earlier stage?</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+<span class="byline author vcard">Posted by <span class="fn">Peter Meilstrup</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-07-25T14:55:01-07:00" pubdate data-updated="true">2014-07-25</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/latex/'>latex</a>, <a class='category' href='/blog/categories/technote/'>technote</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://crowding.github.io/blog/2014/07/25/hevea/" data-via="perisaccadic" data-counturl="http://crowding.github.io/blog/2014/07/25/hevea/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2014/05/21/itunes-library-manipulation-with-python/" title="Previous Post: iTunes library manipulation with Python">&laquo; iTunes library manipulation with Python</a>
+      
+      
+        <a class="basic-alignment right" href="/blog/2014/08/16/replace-less-with-emacs/" title="Next Post: Replace Less with Emacs">Replace Less with Emacs &raquo;</a>
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2014/09/20/racket-and-flycheck-mode/">Racket and Flycheck-mode</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/09/fixing-geiser-racket-repls-error-links/">Fixing Geiser-racket-repl's Error Links</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/09/editing-regexes-interactively-in-emacs/">Editing Structured Regexes Interactively in Emacs</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/09/05/get-emacs-set-up-for-racket/">Get Emacs Set Up for Racket</a>
+      </li>
+    
+      <li class="post">
+        <a href="/blog/2014/08/23/a-strange-writing-tic/">A Strange Writing Tic</a>
+      </li>
+    
+  </ul>
+</section>
+
+<section>
+  <h1>GitHub Repos</h1>
+  <ul id="gh_repos">
+    <li class="loading">Status updating...</li>
+  </ul>
+  
+  <a href="https://github.com/crowding">@crowding</a> on GitHub
+  
+  <script type="text/javascript">
+    $(document).ready(function(){
+        if (!window.jXHR){
+            var jxhr = document.createElement('script');
+            jxhr.type = 'text/javascript';
+            jxhr.src = '/javascripts/libs/jXHR.js';
+            var s = document.getElementsByTagName('script')[0];
+            s.parentNode.insertBefore(jxhr, s);
+        }
+
+        github.showRepos({
+            user: 'crowding',
+            count: 2,
+            skip_forks: true,
+            target: '#gh_repos'
+        });
+    });
+  </script>
+  <script src="/javascripts/github.js" type="text/javascript"> </script>
+</section>
+
+
+<section>
+  <h1>My Pinboard</h1>
+  <ul id="pinboard_linkroll">Fetching linkroll...</ul>
+  <p><a href="http://pinboard.in/u:crowding">My Pinboard Bookmarks &raquo;</a></p>
+</section>
+<script type="text/javascript">
+  var linkroll = 'pinboard_linkroll'; //id target for pinboard list
+  var pinboard_user = "crowding"; //id target for pinboard list
+  var pinboard_count = 3; //id target for pinboard list
+  (function(){
+    var pinboardInit = document.createElement('script');
+    pinboardInit.type = 'text/javascript';
+    pinboardInit.async = true;
+    pinboardInit.src = '/javascripts/pinboard.js';
+    document.getElementsByTagName('head')[0].appendChild(pinboardInit);
+  })();
+</script>
+
+
+<section class="twitter">
+  <a class="twitter-timeline" href="https://twitter.com/perisaccadic" data-widget-id="448287882478764032">Tweets by @perisaccadic</a>
+  <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+</section>
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2014 - Peter Meilstrup -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

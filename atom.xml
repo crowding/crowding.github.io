@@ -4,7 +4,7 @@
   <title><![CDATA[Illusory stillness]]></title>
   <link href="http://crowding.github.io/atom.xml" rel="self"/>
   <link href="http://crowding.github.io/"/>
-  <updated>2014-09-23T22:48:32-07:00</updated>
+  <updated>2014-09-23T22:55:07-07:00</updated>
   <id>http://crowding.github.io/</id>
   <author>
     <name><![CDATA[Peter Meilstrup]]></name>
@@ -19,6 +19,9 @@
     <updated>2014-09-20T16:26:23-07:00</updated>
     <id>http://crowding.github.io/blog/2014/09/20/racket-and-flycheck-mode</id>
     <content type="html"><![CDATA[<p>From <a href="{*post-url%202014-09-05-get-emacs-set-up-for-racket.markdown*}">earlier</a>, I had the following complaints about flycheck:</p>
+
+<!-- more -->
+
 
 <blockquote><p>As I edit code I&rsquo;m getting this annoyingly big message in the minibuffer:</p>
 
@@ -258,6 +261,9 @@ keywords.</p>
 
 
 <p>Leaning-toothpicks syndrome is kicking my ass. What if I write a regex using S-expressions? Wouldn&rsquo;t that be the bee&rsquo;s knees?</p>
+
+<!-- more -->
+
 
 <p>Well, one thing I can do use use the <code>rx</code> macro, but <code>re-builder</code> doesn&rsquo;t seem to want to work with it. I call <code>(reb-change-syntax)</code> to select &lsquo;rx&rsquo; but it only performs a search sometimes? And often finds no matches?</p>
 
@@ -551,34 +557,42 @@ Expression evaluated was:
   <entry>
     <title type="html"><![CDATA[A Strange Writing Tic]]></title>
     <link href="http://crowding.github.io/blog/2014/08/23/a-strange-writing-tic/"/>
-    <updated>2014-08-23T17:07:19-07:00</updated>
+    <updated>2014-08-23T00:00:00-07:00</updated>
     <id>http://crowding.github.io/blog/2014/08/23/a-strange-writing-tic</id>
-    <content type="html"><![CDATA[<p>So I recently read <em>Turing&rsquo;s Cathedral</em> by George Dyson, and then I read <em>Sons of the Profits,</em> and realized they both have the same verbal tic that I found made them hard to keep going with. The problem is that they  have paragrapph and section breaks that leave as much hanging in the air as possible.</p>
-
+    <content type="html"><![CDATA[<table>
+<tbody>
+<tr class="odd">
+<td align="left">layout: post</td>
+</tr>
+<tr class="even">
+<td align="left">title: &quot;A strange writing tic&quot;</td>
+</tr>
+<tr class="odd">
+<td align="left">date: 2014-08-23 17:07:19 -0700</td>
+</tr>
+<tr class="even">
+<td align="left">comments: true</td>
+</tr>
+<tr class="odd">
+<td align="left">categories: complaints</td>
+</tr>
+<tr class="even">
+<td align="left">published: false</td>
+</tr>
+</tbody>
+</table>
+<p>So I recently read <em>Turing&#8217;s Cathedral</em> by George Dyson, and then I read <em>Sons of the Profits,</em> and realized they both have the same verbal tic that I found made them hard to keep going with. The problem is that they have paragraph and section breaks that leave as much hanging in the air as possible.</p>
 <p>This is a technique that, in the right hands, provides some driving force and compellingness to a narrative, but when overused makes a book more difficult to read. The basic structure looks something like this:</p>
-
-<p><em>things about Person A</em>
-<em>Oblique, unexplained reference or injoke about Person B in context</em>
-<em>Paragraph break</em>
-<em>Introduction of Person B</em>
-<em>Explanation of injoke from previous paragraph</em>
-<em>Things person B does</em></p>
-
+<p><em>things about Person A</em> <em>Oblique, unexplained reference or injoke about &quot;someone&quot; who turns out eventually to be Person B</em> <em>Paragraph break</em></p>
+<p><em>Introduction of Person B</em> <em>Oblique reference to injoke from previous paragraph</em> <em>Things person B does</em></p>
 <p>Between the end of the last paragraph and the beginning of the next there is a lot hanging in the air.</p>
-
-<p>If you leave off, or attempt to navigate and backtrack the text by paragraph (as is the frigging point of having paragraphs) you either start reading character description, about Person_B with no idea why he was playing a role in the story, or you start wondering why Person A trailed off. Conversely, if you time your preaks in reading between sections (as is also the purpuse of sections) you always end in the unsatisfying note of the last thiung being said making no sense yet.</p>
-
-<p>When_I read a non fiction book, it is usually in smaller chunks, while fiction is often better suited for longer stretches. When read in a stretch these split references add some narrative tension (by momentarily loading up the reader&rsquo;s short term memory with unresolved details), but given a pattern of reading in bits in pieces I found the split references to impede my understanding, always forcing me to back track from that I thought looked like the start of a section. When, it felt like you might on reading this:</p>
-
+<p>If you leave off, or attempt to navigate and backtrack the text by paragraph (as is the frigging point of having paragraphs) you either start reading character description, about Person B with no idea why he was playing a role in the story, or you start wondering why Person A trailed off. Conversely, if you time your breaks in reading between sections (as is also the frigging purpose of sections) you always end in the unsatisfying note of the last thing being said making no sense yet. Thus you forget it, and when you pick up the next section you have no idea why there&#8217;s a new colorful anecdote.</p>
+<p>When I read a non fiction book, it is usually in smaller chunks, while fiction is often better suited for longer stretches. When read in a stretch these split references add some narrative tension (by momentarily loading up the reader&#8217;s short term memory with unresolved details), but given a pattern of reading in bits in pieces I found the split references to impede my understanding, always forcing me to back track from that I thought looked like the start of a section. When, it felt like you might on reading this:</p>
 <p>Let me try and find some examples rather than being all abstract.:</p>
-
-<p>I could also embed these quotes amid the stream of this text, to simulate taking a break from the writing&hellip;.</p>
-
+<p>I could also embed these quotes amid the stream of this text, to simulate taking a break from the writing&#8230;.</p>
 <p>As you started the previous paragraph, you probably got a strong sense that you were forgetting something._This may have forced you to go back to the previous block quote, to recall the details of the ideas left</p>
-
-<p>These two books employed this tic in different ways. <em>Sons of the Profits</em> had more or less freestanding chapters, but employed a bridging reference between damn near every subsection, like this. This made it annoyingly hard to find places to break, and correspindingly, hard to recover one&rsquo;s place on resuming (for which one needs to locate enough context to get short one&rsquo;s short term memory loaded.)</p>
-
-<p><em>Turing&rsquo;s  Cathedral</em> committed the opposite offense: each <em>chapter</em> ended with an unresolved reference to a person in the following chapter. An example follows.</p>
+<p>These two books employed this tic in different ways. <em>Sons of the Profits</em> had more or less freestanding chapters, but employed a bridging reference between damn near every subsection, like this. This made it annoyingly hard to find places to break, and correspindingly, hard to recover one&#8217;s place on resuming (for which one needs to locate enough context to get short one&#8217;s short term memory loaded.)</p>
+<p><em>Turing&#8217;s Cathedral</em> committed the opposite offense: each <em>chapter</em> ended with an unresolved reference to a person in the following chapter. An example follows.</p>
 ]]></content>
   </entry>
   
@@ -595,6 +609,11 @@ Expression evaluated was:
 </pre></td><td class='code'><pre><code class=''><span class='line'>dekkera:htlatex-maximal peter$ git log
 </span><span class='line'>WARNING: terminal is not fully functional
 </span><span class='line'>-  (press RETURN)</span></code></pre></td></tr></table></div></figure>
+
+
+
+
+<!-- more -->
 
 
 <p>It&rsquo;s reasonable for commands that generate a lot of output to go through <code>less</code>, but <code>less</code> works poorly in an Emacs buffer.</p>

@@ -9,7 +9,7 @@
   <meta name="author" content="Peter Meilstrup">
 
   
-  <meta name="description" content="From earlier, I had the following complaints about flycheck: As I edit code I&rsquo;m getting this annoyingly big message in the minibuffer: &#8220 &hellip;">
+  <meta name="description" content="From earlier, I had the following complaints about flycheck: ">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -96,50 +96,12 @@
 
   <div class="entry-content"><p>From <a href="{*post-url%202014-09-05-get-emacs-set-up-for-racket.markdown*}">earlier</a>, I had the following complaints about flycheck:</p>
 
-<blockquote><p>As I edit code I&rsquo;m getting this annoyingly big message in the minibuffer:</p>
-
-<p>&#8220;`
-Checker racket returned non-zero exit code 1, but no errors from output: r5rs:body: no expression in body
-  in: (r5rs:body (define (new-record data) attach-tag data) (define (get-record name) (new-record data)) (define (get-salary record) (quote salary)))
-  context&hellip;:
-   /Applications/Racket v6.1/share/pkgs/r5rs-lib/r5rs/main.rkt:335:2</p>
-
-<p>Checker definition probably flawed.
-&#8220;`</p>
-
-<p>In other words, one kind of syntax error (no expression on body) is not getting interpreted as an &ldquo;error&rdquo;.</p></blockquote>
-
-<p>To fix this, I need to fix the error patterns that Racket checker uses, to make it catch a certain error as an error.</p>
-
-<p>Now, what is some example output from the racket compiler? I ran <code>M-! racket -f chap3.1.rkt</code> and went to the <code>*Shell Command Output*</code> buffer.</p>
-
-<p>I will play with regexp-builder on that, but how do I add error patterns to the existing thing?</p>
-
-<p>Additionally, I find that the error highlighting is one character off. Racket reporting zero-based colukmn numbers or something. Also the entire following sexp should be underlined (as opposed to underlining a single paren.)</p>
-
-<h3>more advanced syntax checking?</h3>
-
-<p>Well, Racket actually <a href="http://docs.racket-lang.org/tools/Check_Syntax.html">has a syntax checker module</a>, while this is just reporting the errors on trying to load a file. So how to make emacs talk to <code>drracket/check-syntax</code> package? Apparently one must write a Racket script. I don&rsquo;t know what it is saying about syntax objects. <code>(make-traversal ...)</code> apparently makes a Visitor type thing, but where do I get the visited?</p>
-
-<p><a href="http://docs.racket-lang.org/reference/syntax-model.html#%28part._stxobj-model%29">Syntax objects</a></p>
-
-<p>On the other hand, I don&rsquo;t see the &ldquo;Check Syntax&rdquo; button in DrRacket giving any more information about those pesky &ldquo;no expression in body&rdquo; errors (like a line number would be helpful!)</p>
-
-<p>Okay, put this down for now.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>&gt; (make-traversal (make-base-namespace) "chap3.1.rkt")
-</span><span class='line'>#&lt;procedure:expanded-expression&gt;
-</span><span class='line'>#&lt;procedure:expansion-completed&gt;</span></code></pre></td></tr></table></div></figure>
-
-
-<blockquote><p>Actually this particular syntax error (at least when writing code in the <code>#lang planet neil/sicp</code> module) is annoying because it won&rsquo;t point you to the line on which error occurs despite it being mostly syntax. Usually turns out to be an &lsquo;if&rsquo; with no clauses, a duplicated paren, or something.</p>
-
-<p>Additionally, the red underline that flycheck puts is misplaced and tiny (it is frequently on an open paren, when it should really be on all of the first sexp inside that paren).</p></blockquote>
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/09/20/racket-and-flycheck-mode/">Read on &rarr;</a>
+    </footer>
   
 
 
@@ -228,53 +190,12 @@ Checker racket returned non-zero exit code 1, but no errors from output: r5rs:bo
 
 <p>Leaning-toothpicks syndrome is kicking my ass. What if I write a regex using S-expressions? Wouldn&rsquo;t that be the bee&rsquo;s knees?</p>
 
-<p>Well, one thing I can do use use the <code>rx</code> macro, but <code>re-builder</code> doesn&rsquo;t seem to want to work with it. I call <code>(reb-change-syntax)</code> to select &lsquo;rx&rsquo; but it only performs a search sometimes? And often finds no matches?</p>
-
-<p>Debugging from this impetus I get to stepping through <code>reb-update-overlays</code> but I can&rsquo;t inspect the value of local variables in either <code>edebug</code> or <code>debug</code> for some weird reason. (Because of <code>-*- lexical-binding:t -*-</code> in the file.)</p>
-
-<p>New yak frame: how to inspect vars in  lexically bound code? It&rsquo;s probably impossible, though there was an incomplete <a href="http://emacs.1067599.n5.nabble.com/Edebug-amp-lexical-scope-td202618.html">thread</a> about it a couple years ago.</p>
-
-<p>Well, I guess I&rsquo;ll debug it by adding messages.</p>
-
-<p>Now, I find that when I use <code>(rx (one-or-more "/"))</code>, that macro should expand to <code>"/+"</code> but but the regexp we search for is actually <code>"\\(?:/\\+\\)"</code> which doesn&rsquo;t look like a proper regex. What is <code>reb-target-binding</code> doing? Pulling the binding from the target buffer. What&rsquo;s <code>reb-cook-regexp</code> doing? Calling <code>rx-to-string</code> on the result of an <code>rx</code> macro. Which it shouldn&rsquo;t?</p>
-
-<p>Oh, I was typing</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>(rx (one-or-more ":"))</span></code></pre></td></tr></table></div></figure>
-
-
-<p>in the buffer like a sucker (idk, that&rsquo;s what you would write in Elisp?). Turns out I need to type</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>'(one-or-more ":")</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So how do I do a longer regex????? Use <code>and</code>/<code>seq</code>. It should be called <code>progn</code>, shouldn&rsquo;t it? Turns out I should write in regexp-builder like</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>'(seq (one-or-more ":") (class )</span></code></pre></td></tr></table></div></figure>
-
-
-<p>So now I write regexps in regexp-builder like:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>'(seq bol (zero-or-more " ")
-</span><span class='line'>      (group (one-or-more (not (char ":\n\t"))))
-</span><span class='line'>      (zero-or-one ":" (group (one-or-more digit)))
-</span><span class='line'>      (zero-or-one ":" (group (one-or-more digit)))
-</span><span class='line'>      (zero-or-one ": " (group (one-or-more (or (syntax word) (syntax symbol))))))</span></code></pre></td></tr></table></div></figure>
-
-
-<p>and then paste the <code>(seq ...)</code> into an <code>(rx ...)</code> macro when I&rsquo;m done.</p>
-
-<p>Well, there&rsquo;s one more problem. Sometimes I can type a correct regexp and it won&rsquo;t update (it actually removes all highlights). Seems to have something to do with regexp-builder behaving inappropriately when an edit doesn&rsquo;t change the compiled form of the regexp. But I can then call <code>(reb-force-update)</code> and it does, that&rsquo;ll work for now.</p>
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/09/09/editing-regexes-interactively-in-emacs/">Read on &rarr;</a>
+    </footer>
   
 
 
@@ -344,39 +265,47 @@ Checker racket returned non-zero exit code 1, but no errors from output: r5rs:bo
   
 
 
-<time datetime="2014-08-23T17:07:19-07:00" pubdate data-updated="true">2014-08-23</time>
+<time datetime="2014-08-23T00:00:00-07:00" pubdate data-updated="true"></time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><p>So I recently read <em>Turing&rsquo;s Cathedral</em> by George Dyson, and then I read <em>Sons of the Profits,</em> and realized they both have the same verbal tic that I found made them hard to keep going with. The problem is that they  have paragrapph and section breaks that leave as much hanging in the air as possible.</p>
-
+  <div class="entry-content"><table>
+<tbody>
+<tr class="odd">
+<td align="left">layout: post</td>
+</tr>
+<tr class="even">
+<td align="left">title: &quot;A strange writing tic&quot;</td>
+</tr>
+<tr class="odd">
+<td align="left">date: 2014-08-23 17:07:19 -0700</td>
+</tr>
+<tr class="even">
+<td align="left">comments: true</td>
+</tr>
+<tr class="odd">
+<td align="left">categories: complaints</td>
+</tr>
+<tr class="even">
+<td align="left">published: false</td>
+</tr>
+</tbody>
+</table>
+<p>So I recently read <em>Turing&#8217;s Cathedral</em> by George Dyson, and then I read <em>Sons of the Profits,</em> and realized they both have the same verbal tic that I found made them hard to keep going with. The problem is that they have paragraph and section breaks that leave as much hanging in the air as possible.</p>
 <p>This is a technique that, in the right hands, provides some driving force and compellingness to a narrative, but when overused makes a book more difficult to read. The basic structure looks something like this:</p>
-
-<p><em>things about Person A</em>
-<em>Oblique, unexplained reference or injoke about Person B in context</em>
-<em>Paragraph break</em>
-<em>Introduction of Person B</em>
-<em>Explanation of injoke from previous paragraph</em>
-<em>Things person B does</em></p>
-
+<p><em>things about Person A</em> <em>Oblique, unexplained reference or injoke about &quot;someone&quot; who turns out eventually to be Person B</em> <em>Paragraph break</em></p>
+<p><em>Introduction of Person B</em> <em>Oblique reference to injoke from previous paragraph</em> <em>Things person B does</em></p>
 <p>Between the end of the last paragraph and the beginning of the next there is a lot hanging in the air.</p>
-
-<p>If you leave off, or attempt to navigate and backtrack the text by paragraph (as is the frigging point of having paragraphs) you either start reading character description, about Person_B with no idea why he was playing a role in the story, or you start wondering why Person A trailed off. Conversely, if you time your preaks in reading between sections (as is also the purpuse of sections) you always end in the unsatisfying note of the last thiung being said making no sense yet.</p>
-
-<p>When_I read a non fiction book, it is usually in smaller chunks, while fiction is often better suited for longer stretches. When read in a stretch these split references add some narrative tension (by momentarily loading up the reader&rsquo;s short term memory with unresolved details), but given a pattern of reading in bits in pieces I found the split references to impede my understanding, always forcing me to back track from that I thought looked like the start of a section. When, it felt like you might on reading this:</p>
-
+<p>If you leave off, or attempt to navigate and backtrack the text by paragraph (as is the frigging point of having paragraphs) you either start reading character description, about Person B with no idea why he was playing a role in the story, or you start wondering why Person A trailed off. Conversely, if you time your breaks in reading between sections (as is also the frigging purpose of sections) you always end in the unsatisfying note of the last thing being said making no sense yet. Thus you forget it, and when you pick up the next section you have no idea why there&#8217;s a new colorful anecdote.</p>
+<p>When I read a non fiction book, it is usually in smaller chunks, while fiction is often better suited for longer stretches. When read in a stretch these split references add some narrative tension (by momentarily loading up the reader&#8217;s short term memory with unresolved details), but given a pattern of reading in bits in pieces I found the split references to impede my understanding, always forcing me to back track from that I thought looked like the start of a section. When, it felt like you might on reading this:</p>
 <p>Let me try and find some examples rather than being all abstract.:</p>
-
-<p>I could also embed these quotes amid the stream of this text, to simulate taking a break from the writing&hellip;.</p>
-
+<p>I could also embed these quotes amid the stream of this text, to simulate taking a break from the writing&#8230;.</p>
 <p>As you started the previous paragraph, you probably got a strong sense that you were forgetting something._This may have forced you to go back to the previous block quote, to recall the details of the ideas left</p>
-
-<p>These two books employed this tic in different ways. <em>Sons of the Profits</em> had more or less freestanding chapters, but employed a bridging reference between damn near every subsection, like this. This made it annoyingly hard to find places to break, and correspindingly, hard to recover one&rsquo;s place on resuming (for which one needs to locate enough context to get short one&rsquo;s short term memory loaded.)</p>
-
-<p><em>Turing&rsquo;s  Cathedral</em> committed the opposite offense: each <em>chapter</em> ended with an unresolved reference to a person in the following chapter. An example follows.</p>
+<p>These two books employed this tic in different ways. <em>Sons of the Profits</em> had more or less freestanding chapters, but employed a bridging reference between damn near every subsection, like this. This made it annoyingly hard to find places to break, and correspindingly, hard to recover one&#8217;s place on resuming (for which one needs to locate enough context to get short one&#8217;s short term memory loaded.)</p>
+<p><em>Turing&#8217;s Cathedral</em> committed the opposite offense: each <em>chapter</em> ended with an unresolved reference to a person in the following chapter. An example follows.</p>
 </div>
   
   
@@ -422,125 +351,14 @@ Checker racket returned non-zero exit code 1, but no errors from output: r5rs:bo
 </span><span class='line'>-  (press RETURN)</span></code></pre></td></tr></table></div></figure>
 
 
-<p>It&rsquo;s reasonable for commands that generate a lot of output to go through <code>less</code>, but <code>less</code> works poorly in an Emacs buffer.</p>
 
-<p>However, Emacs itself is quite good at paging. So I wondered if I could make Emacs take over for <code>less</code>. I wrote this shell script <code>emacs-pager</code> and placed it on my <code>$PATH</code>:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-<span class='line-number'>12</span>
-<span class='line-number'>13</span>
-<span class='line-number'>14</span>
-<span class='line-number'>15</span>
-<span class='line-number'>16</span>
-<span class='line-number'>17</span>
-<span class='line-number'>18</span>
-<span class='line-number'>19</span>
-<span class='line-number'>20</span>
-<span class='line-number'>21</span>
-<span class='line-number'>22</span>
-<span class='line-number'>23</span>
-<span class='line-number'>24</span>
-<span class='line-number'>25</span>
-<span class='line-number'>26</span>
-<span class='line-number'>27</span>
-<span class='line-number'>28</span>
-<span class='line-number'>29</span>
-<span class='line-number'>30</span>
-<span class='line-number'>31</span>
-<span class='line-number'>32</span>
-<span class='line-number'>33</span>
-<span class='line-number'>34</span>
-<span class='line-number'>35</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>#!/bin/bash
-</span><span class='line'>#A script for $PAGER that redirects to an Emacs buffer
-</span><span class='line'>
-</span><span class='line'># get the command line whose output I am paging
-</span><span class='line'>COMMAND=$(echo "$(ps -o 'command=' -p $(ps -o 'ppid=' $$))" | sed -e 's/["\\]/\\&/g' -e 's/["\\]/\\&/g')
-</span><span class='line'>
-</span><span class='line'># make a named fifo
-</span><span class='line'>FIFO=$(mktemp -ut pager.$$)
-</span><span class='line'>mkfifo $FIFO
-</span><span class='line'>
-</span><span class='line'># tell emacs to to read that fifo into a buffer
-</span><span class='line'>read -d '' LISP &lt;&lt;EOF
-</span><span class='line'>(let* ((buf (generate-new-buffer "*${COMMAND}*"))
-</span><span class='line'>       (proc (start-process "PAGER" buf "cat" "$FIFO")))
-</span><span class='line'>   (view-buffer buf 'kill-buffer)
-</span><span class='line'>   ; make sure point stays at top of window while process output accumulates
-</span><span class='line'>   (set-process-filter proc
-</span><span class='line'>     (lambda (proc string)
-</span><span class='line'>       (let ((buf (process-buffer proc))
-</span><span class='line'>             (mark (process-mark proc)))
-</span><span class='line'>       (with-current-buffer buf
-</span><span class='line'>         (let ((buffer-read-only nil))
-</span><span class='line'>           (save-excursion
-</span><span class='line'>             (goto-char mark)
-</span><span class='line'>             (insert string)
-</span><span class='line'>             (ansi-color-apply-on-region mark (point))
-</span><span class='line'>             ; TODO also support backspace overstriking
-</span><span class='line'>             (set-marker mark (point)))))))))
-</span><span class='line'>EOF
-</span><span class='line'>
-</span><span class='line'># echo "$LISP"
-</span><span class='line'>
-</span><span class='line'>emacsclient -e "$LISP"
-</span><span class='line'>
-</span><span class='line'>cat &gt; "$FIFO"</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Then I made sure the following was in my <code>init.el</code>:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>(server-start)
-</span><span class='line'>(unless (getenv "TERM_PROGRAM")
-</span><span class='line'>  (setenv "TERM" "xterm"))
-</span><span class='line'>(setenv "PAGER" "emacs-pager")</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now when I invoke <code>git log</code> or <code>man</code>, the output appears in a new paging buffer.</p>
-
-<ul>
-<li>Note use of &ldquo;ps&rdquo; to figure out what to call the buffer.</li>
-<li>Note use of <code>printf '%q'</code> to double escape the string that is substituted into Lisp code. (Why did I need double escaping? Shell scripting is terrible is why.)</li>
-<li>The <code>'kill-buffer</code> means that the paging buffer will be deleted when you press &ldquo;q&rdquo;. This is not standard Emacs behavior but I don&rsquo;t want a whole gaggle of temporary buffers laying around.</li>
-<li>The process filter is there just to keep point at the top of the buffer as you receive input.</li>
-<li>There was a weird interaction with Emacs&#8217; builtin <code>M-x man</code> command. I worked around it with:</li>
-</ul>
-
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>(defadvice man (around reset-pager activate)
-</span><span class='line'>  "reset PAGER to `less' when getting man pages."
-</span><span class='line'>  (let ((old (getenv "PAGER")))
-</span><span class='line'>    (setenv "PAGER" "less")
-</span><span class='line'>    ad-do-it
-</span><span class='line'>    (setenv "PAGER" old)))</span></code></pre></td></tr></table></div></figure>
-
-
-<ul>
-<li>There is a further problem when running <code>man</code> from the shell, in that <code>man</code> outputs backspace codes for bold/underline and so on. (TODO)</li>
-</ul>
 
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/08/16/replace-less-with-emacs/">Read on &rarr;</a>
+    </footer>
   
 
 

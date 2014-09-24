@@ -100,6 +100,9 @@
 
 <p>Leaning-toothpicks syndrome is kicking my ass. What if I write a regex using S-expressions? Wouldn&rsquo;t that be the bee&rsquo;s knees?</p>
 
+<!-- more -->
+
+
 <p>Well, one thing I can do use use the <code>rx</code> macro, but <code>re-builder</code> doesn&rsquo;t seem to want to work with it. I call <code>(reb-change-syntax)</code> to select &lsquo;rx&rsquo; but it only performs a search sometimes? And often finds no matches?</p>
 
 <p>Debugging from this impetus I get to stepping through <code>reb-update-overlays</code> but I can&rsquo;t inspect the value of local variables in either <code>edebug</code> or <code>debug</code> for some weird reason. (Because of <code>-*- lexical-binding:t -*-</code> in the file.)</p>

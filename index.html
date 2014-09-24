@@ -386,66 +386,6 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/05/19/whitespace-mode/">Whitespace Mode</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-05-19T00:00:00-07:00" pubdate data-updated="true"></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><table>
-<tbody>
-<tr class="odd">
-<td align="left">layout: post</td>
-</tr>
-<tr class="even">
-<td align="left">title: &quot;whitespace-mode&quot;</td>
-</tr>
-<tr class="odd">
-<td align="left">date: 2014-05-19 21:00:35 -0700</td>
-</tr>
-<tr class="even">
-<td align="left">comments: true</td>
-</tr>
-<tr class="odd">
-<td align="left">categories: technote emacs</td>
-</tr>
-</tbody>
-</table>
-<p>Why does whitespace-mode fuck up longlines mode when it&#8217;s supposed to be disabled?</p>
-<p>I&#8217;d like to edit markdown files with longlines-mode (word wrapping). Clearly when longlines-mode is enabled, I don&#8217;t want to highlight 80+ char lines, as I do when editing code. However, I still want the other whitespace-mode features (highlight trailing spaces, tabs, etc)</p>
-</div>
-  
-  
-    <footer>
-      <a rel="full-article" href="/blog/2014/05/19/whitespace-mode/">Read on &rarr;</a>
-    </footer>
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
       <h1 class="entry-title"><a href="/blog/2014/05/15/time-shifting-an-internet-stream/">Time Shifting an Internet Stream With VLC</a></h1>
     
     
@@ -520,7 +460,7 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/05/15/time-shifting-an-internet-stream/">Time Shifting an Internet Stream</a></h1>
+      <h1 class="entry-title"><a href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/">Setting Up Online Help in Homebrew Erlang/Emacs/Distel</a></h1>
     
     
       <p class="meta">
@@ -536,48 +476,116 @@
   
 
 
-<time datetime="2014-05-15T00:00:00-07:00" pubdate data-updated="true"></time>
+<time datetime="2014-05-05T18:14:41-07:00" pubdate data-updated="true">2014-05-05</time>
         
       </p>
     
   </header>
 
 
-  <div class="entry-content"><table>
-<tbody>
-<tr class="odd">
-<td align="left">layout: post</td>
-</tr>
-<tr class="even">
-<td align="left">title: &quot;Time shifting an internet stream with VLC&quot;</td>
-</tr>
-<tr class="odd">
-<td align="left">date: 2014-05-15 17:31:07 -0700</td>
-</tr>
-<tr class="even">
-<td align="left">comments: true</td>
-</tr>
-<tr class="odd">
-<td align="left">categories: technote fail</td>
-</tr>
-</tbody>
-</table>
-<p><em>(content note: this didn&#8217;t work.)</em></p>
-<p>I want to listen to this <a href="http://www.brap.fm/2014/05/14/the-shiso-room-yppah-guest-mix-16-05-14/">upcoming show</a> but don&#8217;t know if it&#8217;ll be downloadable later.</p>
-<p>I worked out a VLC command line:</p>
-<pre><code>/Applications/VLC.app/Contents/MacOS/VLC \
-http://delicious.wavestreamer.com:4626/listen.pls?sid=1 \
-    vlc://quit \
-    --network-caching=10000 \
-    --sout /Users/peter/2014-05-16_yppah_shisho_room_mix.ogg \
-    --run-time=7400 \
-    --intf rc</code></pre>
-<p>I put the command in an executable <code>.sh</code> file and scheduled it to run using LaunchControl.</p>
-<h3 id="huh">huh?</h3>
-<p>Note that I mistakenly tried to actually read the documentation and used <code>--sout &quot;#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg}&quot;</code></p>
-<p>I don&#8217;t know what&#8217;s wrong or missing about this, but VLC decided to treat it as a filename instead of the syntax in the <a href="http://www.videolan.org/doc/streaming-howto/en/ch03.html">docs</a>:</p>
-<pre><code>[0x109c21840] filesystem access error: cannot open file /Users/peter/#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg} (No such file or directory)</code></pre>
-<p>Anyway, I forget what I did after that, but the VLC command never actually launched. There was an MP3 of the show available anyway.</p>
+  <div class="entry-content"><p>Now IN THEORY, Distel-mode is supposed to show me the online help when I point by cursor at a function name and press <code>C-c C-d h</code>. What I actually get is:</p>
+
+<p>I am unable to Google up a description of how to let Distel know where the HTML documentaiton is (as I installed Erlang from Homebrew, I find the HTML docs under <code>/usr/local/Cellar/erlang/17.0/share/doc/erlang/doc/</code>.)</p>
+
+<p>Now looking in what <code>distel.el</code> actually does with a <code>C-c C-d h</code> I find that Distel contains a module <code>otp_doc</code> which is a singleton <code>gen_server</code>&hellip; so I go to an erlang shell on that node and type</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)3&gt; whereis(otp_doc).
+</span><span class='line'>&lt;0.44.0&gt;</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now I also saw that the <code>otp_doc</code> module had a property list as the init of its <code>gen_server</code> state. The state contained a <code>root_dir</code> variable. The root_dir variable is initialized to a default of <code>code:root_dir()</code>, which is currently set to:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)4&gt; code:root_dir().
+</span><span class='line'>"/usr/local/Cellar/erlang/17.0/lib/erlang"</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Aping Distel and calling otp_doc does:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>(emacs@dekkera)9&gt; otp_doc:distel(link, "orddict", "find", 2).
+</span><span class='line'>no_html</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Meanwhile, another Distel function <code>C-c C-d A</code> which is bound to <code>erl-show-arglist</code>  works fine when pressed ad <code>orddict:find|</code>. And <code>C-c C-d d</code> also comes up with useful information &mdash; but this information doesn&rsquo;t look like /documentation/.</p>
+
+<p>From Emacs. <code>C-c C-d h</code> does <code>(erl-do-find-doc 'link 'point 'code</code>root_dir 0)`,</p>
+
+<p>And it looks like <code>init()</code> calls <code>index_html()</code> the <code>no_html</code> is coming from <code>init()</code> I guess. Here&rsquo;s how:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>html_index(file,Dir) -&gt;
+</span><span class='line'>  FN = filename:join([Dir,"doc","man_index.html"]),
+</span><span class='line'>  fold_file(curry(fun lines/3,Dir),[],FN).</span></code></pre></td></tr></table></div></figure>
+
+
+<p>So do I need to set root_dir to <code>/usr/local/Cellar/erlang/17.0/share/erlang</code>? Or alter how otp_doc is being initialized? Looks like it is accessed through <code>otp_doc:start</code>.</p>
+
+<p>So how to provide the start state from Emacs?</p>
+
+<p>I can&rsquo;t find where this value is configured, anywhere.</p>
+
+<p>So I just crapped out and made a symlink:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>dekkera:lib peter$ cd /usr/local/Cellar/erlang/17.0/lib/erlang
+</span><span class='line'>dekkera:lib peter$ ln -s ../../share/doc/erlang/doc doc</span></code></pre></td></tr></table></div></figure>
+
+
+<p>This got rid of no_html error but I still don&rsquo;t find any HTML documentation! What the hell.  I&rsquo;ll have to see why it&rsquo;s not reading the HTML file and populating the ETS database, or something.</p>
+
+<p>This is more debugging of Erlang than I can handle when all I&rsquo;m trying to do is write Erlang code. Argh.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/04/28/un-pause-programs-in-os-x/">Un-pause Programs in OS X</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-04-28T12:43:01-07:00" pubdate data-updated="true">2014-04-28</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>I&rsquo;m not sure why there isn&rsquo;t a builtin way to do this. When a process eats all memory on OS X, it starts &ldquo;pausing&rdquo; applications. Upon killing the offending app, one wants to un-pause all the apps. But if you close the dialog, you can&rsquo;t resume!</p>
+
+<p>I can &ldquo;resume&rdquo; like this:</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>pgrep Chrome | xargs kill -CONT</span></code></pre></td></tr></table></div></figure>
+
+
+<p>which appears to make the apps usable again but the processes still show up as &ldquo;paused&rdquo; in the force quit dialog. Also, I think the unpausing should respect the process tree (not process names.)</p>
 </div>
   
   

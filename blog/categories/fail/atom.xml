@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: Fail | Illusory stillness]]></title>
+  <link href="http://crowding.github.io/blog/categories/fail/atom.xml" rel="self"/>
+  <link href="http://crowding.github.io/"/>
+  <updated>2014-09-23T23:16:11-07:00</updated>
+  <id>http://crowding.github.io/</id>
+  <author>
+    <name><![CDATA[Peter Meilstrup]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[Time Shifting an Internet Stream With VLC]]></title>
+    <link href="http://crowding.github.io/blog/2014/05/15/time-shifting-an-internet-stream/"/>
+    <updated>2014-05-15T17:31:07-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/05/15/time-shifting-an-internet-stream</id>
+    <content type="html"><![CDATA[<p><em>(content note: this didn&rsquo;t work.)</em></p>
+
+<p>I want to listen to this <a href="http://www.brap.fm/2014/05/14/the-shiso-room-yppah-guest-mix-16-05-14/">upcoming show</a> but don&rsquo;t know if it&rsquo;ll be downloadable later.</p>
+
+<p>I worked out a VLC command line:</p>
+
+<p>```
+/Applications/VLC.app/Contents/MacOS/VLC \
+<a href="http://delicious.wavestreamer.com:4626/listen.pls?sid=1">http://delicious.wavestreamer.com:4626/listen.pls?sid=1</a> \</p>
+
+<pre><code>vlc://quit \
+--network-caching=10000 \
+--sout /Users/peter/2014-05-16_yppah_shisho_room_mix.ogg \
+--run-time=7400 \
+--intf rc
+</code></pre>
+
+<p>```</p>
+
+<p>I put the command in an executable <code>.sh</code> file and scheduled it to run using LaunchControl.</p>
+
+<h3>huh?</h3>
+
+<p>Note that I mistakenly tried to actually read the documentation and used
+<code>
+--sout "#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg}"
+</code></p>
+
+<p>I don&rsquo;t know what&rsquo;s wrong or missing about this, but VLC decided to treat it as a filename instead of the syntax in the <a href="http://www.videolan.org/doc/streaming-howto/en/ch03.html">docs</a>:</p>
+
+<p><code>
+[0x109c21840] filesystem access error: cannot open file /Users/peter/#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg} (No such file or directory)
+</code></p>
+
+<p>Anyway, I forget what I did after that, but the VLC command never actually launched. There was an MP3 of the show available anyway.</p>
+]]></content>
+  </entry>
+  
+</feed>

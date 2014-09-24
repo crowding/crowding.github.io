@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Latex | Illusory stillness]]></title>
   <link href="http://crowding.github.io/blog/categories/latex/atom.xml" rel="self"/>
   <link href="http://crowding.github.io/"/>
-  <updated>2014-09-23T22:55:07-07:00</updated>
+  <updated>2014-09-23T23:16:11-07:00</updated>
   <id>http://crowding.github.io/</id>
   <author>
     <name><![CDATA[Peter Meilstrup]]></name>
@@ -21,6 +21,9 @@
     <content type="html"><![CDATA[<p>So I wrote a thesis, using some self-torturing chain of LyX, <a href="http://yihui.name/knitr/">knitr</a>, and a build tool of my own devising. It made a PDF, now I want to make it a webpage.</p>
 
 <p>I tried a few tools, and settled on <a href="http://hevea.inria.fr/">HeVeA</a> as the tool that showed the most promise (as in, &lsquo;it actually generated some HTML for a subset of my files, within a few hours of work&rsquo;). That&rsquo;s not close to &ldquo;working&rdquo; though.</p>
+
+<!-- more -->
+
 
 <p>Currently, I&rsquo;m having a problem where a <code>\ref{}</code> is processed correctly by LaTeX, producing a link labeled &ldquo;Figure x&rdquo;, but incorrectly by Hevea, including the entire caption, like so:</p>
 

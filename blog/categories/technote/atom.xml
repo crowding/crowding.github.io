@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Technote | Illusory stillness]]></title>
   <link href="http://crowding.github.io/blog/categories/technote/atom.xml" rel="self"/>
   <link href="http://crowding.github.io/"/>
-  <updated>2014-09-23T22:55:07-07:00</updated>
+  <updated>2014-09-23T23:16:11-07:00</updated>
   <id>http://crowding.github.io/</id>
   <author>
     <name><![CDATA[Peter Meilstrup]]></name>
@@ -413,7 +413,7 @@ Compiling /Users/peter/sicp/chap2.4.rkt &hellip;</p>
 <p>Error: retort-syntax</p>
 
 <p>(mcons (mcons &lsquo;result (mcons &ldquo;#<void>&rdquo; &rsquo;())) (mcons (mcons &lsquo;output &ldquo;&rdquo;) &rsquo;()))
-<a href="&#109;&#97;&#x69;&#108;&#x74;&#111;&#x3a;&#x72;&#x61;&#99;&#107;&#x65;&#x74;&#64;&#x63;&#x68;&#97;&#x70;&#x32;&#46;&#x34;&#x2e;&#x72;&#x6b;&#x74;">&#114;&#x61;&#x63;&#107;&#x65;&#x74;&#x40;&#99;&#104;&#x61;&#x70;&#50;&#46;&#52;&#x2e;&#114;&#107;&#116;</a>>
+<a href="&#109;&#97;&#x69;&#x6c;&#x74;&#111;&#58;&#114;&#x61;&#x63;&#107;&#x65;&#116;&#x40;&#x63;&#x68;&#x61;&#112;&#x32;&#x2e;&#52;&#46;&#114;&#x6b;&#116;">&#114;&#x61;&#99;&#107;&#101;&#x74;&#x40;&#x63;&#104;&#97;&#112;&#50;&#46;&#x34;&#x2e;&#114;&#x6b;&#x74;</a>>
 ```</p>
 
 <p>&ldquo;Retort-syntax&rdquo;? WTH?</p>

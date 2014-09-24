@@ -9,14 +9,7 @@
   <meta name="author" content="Peter Meilstrup">
 
   
-  <meta name="description" content="I want to listen to this upcoming show but don&rsquo;t know if it&rsquo;ll be downloadable later. I worked out a VLC command line: 1
-2
-3
-4
-5
-6
-7
-/ &hellip;">
+  <meta name="description" content="(content note: this didn&rsquo;t work.) I want to listen to this upcoming show but don&rsquo;t know if it&rsquo;ll be downloadable later. I worked &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -98,7 +91,9 @@
   </header>
 
 
-<div class="entry-content"><p>I want to listen to this <a href="http://www.brap.fm/2014/05/14/the-shiso-room-yppah-guest-mix-16-05-14/">upcoming show</a> but don&rsquo;t know if it&rsquo;ll be downloadable later.</p>
+<div class="entry-content"><p><em>(content note: this didn&rsquo;t work.)</em></p>
+
+<p>I want to listen to this <a href="http://www.brap.fm/2014/05/14/the-shiso-room-yppah-guest-mix-16-05-14/">upcoming show</a> but don&rsquo;t know if it&rsquo;ll be downloadable later.</p>
 
 <p>I worked out a VLC command line:</p>
 
@@ -128,11 +123,13 @@
 </pre></td><td class='code'><pre><code class=''><span class='line'>--sout "#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg}"</span></code></pre></td></tr></table></div></figure>
 
 
-<p>I don&rsquo;t know what&rsquo;s srong or missing about this, but VLC decided to treat it as a filename instead of the syntax in the <a href="http://www.videolan.org/doc/streaming-howto/en/ch03.html">docs</a>:</p>
+<p>I don&rsquo;t know what&rsquo;s wrong or missing about this, but VLC decided to treat it as a filename instead of the syntax in the <a href="http://www.videolan.org/doc/streaming-howto/en/ch03.html">docs</a>:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[0x109c21840] filesystem access error: cannot open file /Users/peter/blog/#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg} (No such file or directory)</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[0x109c21840] filesystem access error: cannot open file /Users/peter/#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg} (No such file or directory)</span></code></pre></td></tr></table></div></figure>
 
+
+<p>Anyway, I forget what I did after that, but the VLC command never actually launched. There was an MP3 of the show available anyway.</p>
 </div>
 
 
@@ -160,7 +157,7 @@
 
 <span class="categories">
   
-    <a class='category' href='/blog/categories/technote/'>technote</a>
+    <a class='category' href='/blog/categories/fail/'>fail</a>, <a class='category' href='/blog/categories/technote/'>technote</a>
   
 </span>
 
@@ -178,10 +175,10 @@
     
     <p class="meta">
       
-        <a class="basic-alignment left" href="/blog/2014/05/05/setting-up-online-help-in-erlang-slash-emacs-slash-distel/" title="Previous Post: Setting up online help in Homebrew Erlang/Emacs/Distel">&laquo; Setting up online help in Homebrew Erlang/Emacs/Distel</a>
+        <a class="basic-alignment left" href="/blog/2014/05/15/time-shifting-an-internet-stream/" title="Previous Post: Time Shifting An Internet Stream">&laquo; Time Shifting An Internet Stream</a>
       
       
-        <a class="basic-alignment right" href="/blog/2014/05/19/whitespace-mode/" title="Next Post: whitespace-mode">whitespace-mode &raquo;</a>
+        <a class="basic-alignment right" href="/blog/2014/05/19/whitespace-mode/" title="Next Post: Whitespace Mode">Whitespace Mode &raquo;</a>
       
     </p>
   </footer>
@@ -212,7 +209,7 @@
       </li>
     
       <li class="post">
-        <a href="/blog/2014/08/23/a-strange-writing-tic/">A Strange Writing Tic</a>
+        <a href="/blog/2014/08/16/replace-less-with-emacs/">Replace Less With Emacs</a>
       </li>
     
   </ul>

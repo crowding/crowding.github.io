@@ -4,7 +4,7 @@
   <title><![CDATA[Illusory stillness]]></title>
   <link href="http://crowding.github.io/atom.xml" rel="self"/>
   <link href="http://crowding.github.io/"/>
-  <updated>2014-09-23T22:55:07-07:00</updated>
+  <updated>2014-09-23T23:16:11-07:00</updated>
   <id>http://crowding.github.io/</id>
   <author>
     <name><![CDATA[Peter Meilstrup]]></name>
@@ -555,48 +555,6 @@ Expression evaluated was:
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[A Strange Writing Tic]]></title>
-    <link href="http://crowding.github.io/blog/2014/08/23/a-strange-writing-tic/"/>
-    <updated>2014-08-23T00:00:00-07:00</updated>
-    <id>http://crowding.github.io/blog/2014/08/23/a-strange-writing-tic</id>
-    <content type="html"><![CDATA[<table>
-<tbody>
-<tr class="odd">
-<td align="left">layout: post</td>
-</tr>
-<tr class="even">
-<td align="left">title: &quot;A strange writing tic&quot;</td>
-</tr>
-<tr class="odd">
-<td align="left">date: 2014-08-23 17:07:19 -0700</td>
-</tr>
-<tr class="even">
-<td align="left">comments: true</td>
-</tr>
-<tr class="odd">
-<td align="left">categories: complaints</td>
-</tr>
-<tr class="even">
-<td align="left">published: false</td>
-</tr>
-</tbody>
-</table>
-<p>So I recently read <em>Turing&#8217;s Cathedral</em> by George Dyson, and then I read <em>Sons of the Profits,</em> and realized they both have the same verbal tic that I found made them hard to keep going with. The problem is that they have paragraph and section breaks that leave as much hanging in the air as possible.</p>
-<p>This is a technique that, in the right hands, provides some driving force and compellingness to a narrative, but when overused makes a book more difficult to read. The basic structure looks something like this:</p>
-<p><em>things about Person A</em> <em>Oblique, unexplained reference or injoke about &quot;someone&quot; who turns out eventually to be Person B</em> <em>Paragraph break</em></p>
-<p><em>Introduction of Person B</em> <em>Oblique reference to injoke from previous paragraph</em> <em>Things person B does</em></p>
-<p>Between the end of the last paragraph and the beginning of the next there is a lot hanging in the air.</p>
-<p>If you leave off, or attempt to navigate and backtrack the text by paragraph (as is the frigging point of having paragraphs) you either start reading character description, about Person B with no idea why he was playing a role in the story, or you start wondering why Person A trailed off. Conversely, if you time your breaks in reading between sections (as is also the frigging purpose of sections) you always end in the unsatisfying note of the last thing being said making no sense yet. Thus you forget it, and when you pick up the next section you have no idea why there&#8217;s a new colorful anecdote.</p>
-<p>When I read a non fiction book, it is usually in smaller chunks, while fiction is often better suited for longer stretches. When read in a stretch these split references add some narrative tension (by momentarily loading up the reader&#8217;s short term memory with unresolved details), but given a pattern of reading in bits in pieces I found the split references to impede my understanding, always forcing me to back track from that I thought looked like the start of a section. When, it felt like you might on reading this:</p>
-<p>Let me try and find some examples rather than being all abstract.:</p>
-<p>I could also embed these quotes amid the stream of this text, to simulate taking a break from the writing&#8230;.</p>
-<p>As you started the previous paragraph, you probably got a strong sense that you were forgetting something._This may have forced you to go back to the previous block quote, to recall the details of the ideas left</p>
-<p>These two books employed this tic in different ways. <em>Sons of the Profits</em> had more or less freestanding chapters, but employed a bridging reference between damn near every subsection, like this. This made it annoyingly hard to find places to break, and correspindingly, hard to recover one&#8217;s place on resuming (for which one needs to locate enough context to get short one&#8217;s short term memory loaded.)</p>
-<p><em>Turing&#8217;s Cathedral</em> committed the opposite offense: each <em>chapter</em> ended with an unresolved reference to a person in the following chapter. An example follows.</p>
-]]></content>
-  </entry>
-  
-  <entry>
     <title type="html"><![CDATA[Replace Less With Emacs]]></title>
     <link href="http://crowding.github.io/blog/2014/08/16/replace-less-with-emacs/"/>
     <updated>2014-08-16T12:31:20-07:00</updated>
@@ -745,6 +703,9 @@ Expression evaluated was:
 
 <p>I tried a few tools, and settled on <a href="http://hevea.inria.fr/">HeVeA</a> as the tool that showed the most promise (as in, &lsquo;it actually generated some HTML for a subset of my files, within a few hours of work&rsquo;). That&rsquo;s not close to &ldquo;working&rdquo; though.</p>
 
+<!-- more -->
+
+
 <p>Currently, I&rsquo;m having a problem where a <code>\ref{}</code> is processed correctly by LaTeX, producing a link labeled &ldquo;Figure x&rdquo;, but incorrectly by Hevea, including the entire caption, like so:</p>
 
 <p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | &ldquo;title text&rdquo; [&ldquo;alt text&rdquo;]] %}</p>
@@ -827,42 +788,16 @@ Expression evaluated was:
   </entry>
   
   <entry>
-    <title type="html"><![CDATA[iTunes Library Manipulation With Python]]></title>
-    <link href="http://crowding.github.io/blog/2014/05/21/itunes-library-manipulation-with-python/"/>
-    <updated>2014-05-21T12:13:36-07:00</updated>
-    <id>http://crowding.github.io/blog/2014/05/21/itunes-library-manipulation-with-python</id>
-    <content type="html"><![CDATA[<p>Current project: filter out duplicates and CDs with missing tracks from library.</p>
-
-<p>Using: Python/appscript.</p>
-
-<p>Er, first upgrading my Python/IPython?</p>
-
-<p>I followed <a href="http://stupidpythonideas.blogspot.com/2013/02/installing-scipy-etc-for-python-3-on-mac.html">these instructions</a>.</p>
-
-<p>Except that instead of <code>easy_install3.4 readline</code> do <code>pip3 install gnureadline</code>.</p>
-
-<p>And install an old gfortran? I get zombie errors referring to a nonexistent version of homebrew&rsquo;s gfortran.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>brew install python3
-</span><span class='line'>pip install --upgrade pip
-</span><span class='line'>pip install ipython[notebook]</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Dammit I just install a binary numpy.</p>
-]]></content>
-  </entry>
-  
-  <entry>
     <title type="html"><![CDATA[Whitespace-mode]]></title>
     <link href="http://crowding.github.io/blog/2014/05/19/whitespace-mode/"/>
     <updated>2014-05-19T21:00:35-07:00</updated>
     <id>http://crowding.github.io/blog/2014/05/19/whitespace-mode</id>
     <content type="html"><![CDATA[<p>Why does whitespace-mode fuck up longlines mode when it&rsquo;s supposed to be disabled?</p>
 
-<p>I&rsquo;d like to edit markdown files with longlines-mode (word wrapping). Clearly when longlines-mode is enabled, I don&rsquo;t want to highlight 80+ char lines, as I_do when editing code. However, I still want the other whitespace-mode features (highlight trailing spaces, tabs, etc)</p>
+<p>I&rsquo;d like to edit markdown files with longlines-mode (word wrapping). Clearly when longlines-mode is enabled, I don&rsquo;t want to highlight 80+ char lines, as I do when editing code. However, I still want the other whitespace-mode features (highlight trailing spaces, tabs, etc)</p>
+
+<!-- more -->
+
 
 <p>I have, in my markdown-mode modehook:</p>
 
@@ -931,11 +866,73 @@ Expression evaluated was:
   </entry>
   
   <entry>
+    <title type="html"><![CDATA[Whitespace Mode]]></title>
+    <link href="http://crowding.github.io/blog/2014/05/19/whitespace-mode/"/>
+    <updated>2014-05-19T00:00:00-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/05/19/whitespace-mode</id>
+    <content type="html"><![CDATA[<table>
+<tbody>
+<tr class="odd">
+<td align="left">layout: post</td>
+</tr>
+<tr class="even">
+<td align="left">title: &quot;whitespace-mode&quot;</td>
+</tr>
+<tr class="odd">
+<td align="left">date: 2014-05-19 21:00:35 -0700</td>
+</tr>
+<tr class="even">
+<td align="left">comments: true</td>
+</tr>
+<tr class="odd">
+<td align="left">categories: technote emacs</td>
+</tr>
+</tbody>
+</table>
+<p>Why does whitespace-mode fuck up longlines mode when it&#8217;s supposed to be disabled?</p>
+<p>I&#8217;d like to edit markdown files with longlines-mode (word wrapping). Clearly when longlines-mode is enabled, I don&#8217;t want to highlight 80+ char lines, as I do when editing code. However, I still want the other whitespace-mode features (highlight trailing spaces, tabs, etc)</p>
+<!-- more -->
+
+<p>I have, in my markdown-mode modehook:</p>
+<pre><code>  (when whitespace-mode
+    (whitespace-mode &#39;disable)
+    (setq-local whitespace-style (remove &#39;lines-tail whitespace-style)))</code></pre>
+<p>It doesn&#8217;t work. Lines longer than 80char still get highlighted.</p>
+<p>But indeed &#8216;lines-tail does not appear in whitespace-style. However, too late: this came after whitespace-mode had initialized, and so it&#8217;s already set up.</p>
+<p>Moving to a lighlighted char and doing <code>(face-at-point)</code> reveals <code>whitespace-line</code>.</p>
+<p>Disabling font-lock-mode disables all highlighting.</p>
+<p><code>font-lock-fontify-buffer</code> doesn&#8217;t do it.</p>
+<p><code>font-lock-keywords-alist</code> does not contain anything pertaining to whitespace-mode.</p>
+<p>Hmmm. maybe I can locally redefine the face.</p>
+<p><code>font-lock-keywords</code> is not buffer local. It contains this:</p>
+<pre><code>(&quot;^\\([^    \n]\\{4\\}\\|[^ \n]\\{0,3\\}    \\)\\{20\\}\\(.+\\)$&quot;
+(2 whitespace-line t))</code></pre>
+<p>If I remove <code>lines-tail</code> f rom <code>whitespace-style</code> before loading the buffer&#8230; the offending highlighting does not take place.</p>
+<p>So I need to to the remove before enabling whitespace mode? and make it buffer-local?</p>
+<p>So, I made sure that the modification to whitespace-style occurred before whitespace-mode was enabled. That did the trick, I think.</p>
+<p>So, here:</p>
+<pre><code>(add-hook &#39;markdown-mode-hook &#39;pbm-markdown-fonts)
+
+(defun pbm-markdown-fonts ()
+  ;Use variable pitch fonts, and wrap long lines.
+  (variable-pitch-mode t)
+  (if whitespace-mode
+      (error &quot;markdown mode needs configured before whitespace mode is enabled&quot;))
+  (setq-local whitespace-style (remove &#39;lines-tail whitespace-style))
+  (visual-line-mode)
+  (set-visual-wrap-column 75)
+  (font-lock-fontify-buffer))</code></pre>
+]]></content>
+  </entry>
+  
+  <entry>
     <title type="html"><![CDATA[Time Shifting an Internet Stream With VLC]]></title>
     <link href="http://crowding.github.io/blog/2014/05/15/time-shifting-an-internet-stream/"/>
     <updated>2014-05-15T17:31:07-07:00</updated>
     <id>http://crowding.github.io/blog/2014/05/15/time-shifting-an-internet-stream</id>
-    <content type="html"><![CDATA[<p>I want to listen to this <a href="http://www.brap.fm/2014/05/14/the-shiso-room-yppah-guest-mix-16-05-14/">upcoming show</a> but don&rsquo;t know if it&rsquo;ll be downloadable later.</p>
+    <content type="html"><![CDATA[<p><em>(content note: this didn&rsquo;t work.)</em></p>
+
+<p>I want to listen to this <a href="http://www.brap.fm/2014/05/14/the-shiso-room-yppah-guest-mix-16-05-14/">upcoming show</a> but don&rsquo;t know if it&rsquo;ll be downloadable later.</p>
 
 <p>I worked out a VLC command line:</p>
 
@@ -965,11 +962,56 @@ Expression evaluated was:
 </pre></td><td class='code'><pre><code class=''><span class='line'>--sout "#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg}"</span></code></pre></td></tr></table></div></figure>
 
 
-<p>I don&rsquo;t know what&rsquo;s srong or missing about this, but VLC decided to treat it as a filename instead of the syntax in the <a href="http://www.videolan.org/doc/streaming-howto/en/ch03.html">docs</a>:</p>
+<p>I don&rsquo;t know what&rsquo;s wrong or missing about this, but VLC decided to treat it as a filename instead of the syntax in the <a href="http://www.videolan.org/doc/streaming-howto/en/ch03.html">docs</a>:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[0x109c21840] filesystem access error: cannot open file /Users/peter/blog/#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg} (No such file or directory)</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[0x109c21840] filesystem access error: cannot open file /Users/peter/#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg} (No such file or directory)</span></code></pre></td></tr></table></div></figure>
 
+
+<p>Anyway, I forget what I did after that, but the VLC command never actually launched. There was an MP3 of the show available anyway.</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Time Shifting an Internet Stream]]></title>
+    <link href="http://crowding.github.io/blog/2014/05/15/time-shifting-an-internet-stream/"/>
+    <updated>2014-05-15T00:00:00-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/05/15/time-shifting-an-internet-stream</id>
+    <content type="html"><![CDATA[<table>
+<tbody>
+<tr class="odd">
+<td align="left">layout: post</td>
+</tr>
+<tr class="even">
+<td align="left">title: &quot;Time shifting an internet stream with VLC&quot;</td>
+</tr>
+<tr class="odd">
+<td align="left">date: 2014-05-15 17:31:07 -0700</td>
+</tr>
+<tr class="even">
+<td align="left">comments: true</td>
+</tr>
+<tr class="odd">
+<td align="left">categories: technote fail</td>
+</tr>
+</tbody>
+</table>
+<p><em>(content note: this didn&#8217;t work.)</em></p>
+<p>I want to listen to this <a href="http://www.brap.fm/2014/05/14/the-shiso-room-yppah-guest-mix-16-05-14/">upcoming show</a> but don&#8217;t know if it&#8217;ll be downloadable later.</p>
+<p>I worked out a VLC command line:</p>
+<pre><code>/Applications/VLC.app/Contents/MacOS/VLC \
+http://delicious.wavestreamer.com:4626/listen.pls?sid=1 \
+    vlc://quit \
+    --network-caching=10000 \
+    --sout /Users/peter/2014-05-16_yppah_shisho_room_mix.ogg \
+    --run-time=7400 \
+    --intf rc</code></pre>
+<p>I put the command in an executable <code>.sh</code> file and scheduled it to run using LaunchControl.</p>
+<h3 id="huh">huh?</h3>
+<p>Note that I mistakenly tried to actually read the documentation and used <code>--sout &quot;#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg}&quot;</code></p>
+<p>I don&#8217;t know what&#8217;s wrong or missing about this, but VLC decided to treat it as a filename instead of the syntax in the <a href="http://www.videolan.org/doc/streaming-howto/en/ch03.html">docs</a>:</p>
+<pre><code>[0x109c21840] filesystem access error: cannot open file /Users/peter/#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg} (No such file or directory)</code></pre>
+<p>Anyway, I forget what I did after that, but the VLC command never actually launched. There was an MP3 of the show available anyway.</p>
 ]]></content>
   </entry>
   

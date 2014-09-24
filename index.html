@@ -249,75 +249,6 @@
       
   <header>
     
-      <h1 class="entry-title"><a href="/blog/2014/08/23/a-strange-writing-tic/">A Strange Writing Tic</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-08-23T00:00:00-07:00" pubdate data-updated="true"></time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><table>
-<tbody>
-<tr class="odd">
-<td align="left">layout: post</td>
-</tr>
-<tr class="even">
-<td align="left">title: &quot;A strange writing tic&quot;</td>
-</tr>
-<tr class="odd">
-<td align="left">date: 2014-08-23 17:07:19 -0700</td>
-</tr>
-<tr class="even">
-<td align="left">comments: true</td>
-</tr>
-<tr class="odd">
-<td align="left">categories: complaints</td>
-</tr>
-<tr class="even">
-<td align="left">published: false</td>
-</tr>
-</tbody>
-</table>
-<p>So I recently read <em>Turing&#8217;s Cathedral</em> by George Dyson, and then I read <em>Sons of the Profits,</em> and realized they both have the same verbal tic that I found made them hard to keep going with. The problem is that they have paragraph and section breaks that leave as much hanging in the air as possible.</p>
-<p>This is a technique that, in the right hands, provides some driving force and compellingness to a narrative, but when overused makes a book more difficult to read. The basic structure looks something like this:</p>
-<p><em>things about Person A</em> <em>Oblique, unexplained reference or injoke about &quot;someone&quot; who turns out eventually to be Person B</em> <em>Paragraph break</em></p>
-<p><em>Introduction of Person B</em> <em>Oblique reference to injoke from previous paragraph</em> <em>Things person B does</em></p>
-<p>Between the end of the last paragraph and the beginning of the next there is a lot hanging in the air.</p>
-<p>If you leave off, or attempt to navigate and backtrack the text by paragraph (as is the frigging point of having paragraphs) you either start reading character description, about Person B with no idea why he was playing a role in the story, or you start wondering why Person A trailed off. Conversely, if you time your breaks in reading between sections (as is also the frigging purpose of sections) you always end in the unsatisfying note of the last thing being said making no sense yet. Thus you forget it, and when you pick up the next section you have no idea why there&#8217;s a new colorful anecdote.</p>
-<p>When I read a non fiction book, it is usually in smaller chunks, while fiction is often better suited for longer stretches. When read in a stretch these split references add some narrative tension (by momentarily loading up the reader&#8217;s short term memory with unresolved details), but given a pattern of reading in bits in pieces I found the split references to impede my understanding, always forcing me to back track from that I thought looked like the start of a section. When, it felt like you might on reading this:</p>
-<p>Let me try and find some examples rather than being all abstract.:</p>
-<p>I could also embed these quotes amid the stream of this text, to simulate taking a break from the writing&#8230;.</p>
-<p>As you started the previous paragraph, you probably got a strong sense that you were forgetting something._This may have forced you to go back to the previous block quote, to recall the details of the ideas left</p>
-<p>These two books employed this tic in different ways. <em>Sons of the Profits</em> had more or less freestanding chapters, but employed a bridging reference between damn near every subsection, like this. This made it annoyingly hard to find places to break, and correspindingly, hard to recover one&#8217;s place on resuming (for which one needs to locate enough context to get short one&#8217;s short term memory loaded.)</p>
-<p><em>Turing&#8217;s Cathedral</em> committed the opposite offense: each <em>chapter</em> ended with an unresolved reference to a person in the following chapter. An example follows.</p>
-</div>
-  
-  
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
       <h1 class="entry-title"><a href="/blog/2014/08/16/replace-less-with-emacs/">Replace Less With Emacs</a></h1>
     
     
@@ -396,142 +327,12 @@
 
 <p>I tried a few tools, and settled on <a href="http://hevea.inria.fr/">HeVeA</a> as the tool that showed the most promise (as in, &lsquo;it actually generated some HTML for a subset of my files, within a few hours of work&rsquo;). That&rsquo;s not close to &ldquo;working&rdquo; though.</p>
 
-<p>Currently, I&rsquo;m having a problem where a <code>\ref{}</code> is processed correctly by LaTeX, producing a link labeled &ldquo;Figure x&rdquo;, but incorrectly by Hevea, including the entire caption, like so:</p>
-
-<p>Error processing input, expected syntax: {% img [class name(s)] [http[s]:/]/path/to/image [width [height]] [title text | &ldquo;title text&rdquo; [&ldquo;alt text&rdquo;]] %}</p>
-
-<p>Disabling the <code>hyperref</code> and <code>refstyle</code> packages didn&rsquo;t do much. I seem to remember also having this problem when using a <code>ref{}</code> to another figure inside of a figure caption but I am not sure how that was resolved.</p>
-
-<p>This is one problem with LaTeX projects, they become hard to troubleshoot. For any two things you want to do in LaTeX, there are four packages offering each, for 16 combinations, each of which will be grossly or subtly incompatible in some way.</p>
-
-<p>In this case, something somewhere is fucking with the generation of reference labels or something. The actual HTML looks like:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'><span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;#mov%3Auncrowded&quot;</span><span class="nt">&gt;</span>2.1(demo_circle_6.mov) An example
-</span><span class='line'>motion stimulus similar to those used in my experiments. There are six
-</span><span class='line'>elements, with the carrier motion clockwise and the envelope
-</span><span class='line'>counterclockwise. The envelope motion dominates the subjective
-</span><span class='line'>appearance. figure.caption.2<span class="nt">&lt;/a&gt;</span> shows six elements, so the spacing
-</span><span class='line'>between elements
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>which was constructed from this TeX:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'>\ref{mov:uncrowded} shows six elements, so the spacing between elements
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Now, part of the fuckup is with hyperref? maybe? Next I need to try constructing a minimal example. Luckily I have a minimal example already&hellip;.</p>
-
-<h3>Some time later</h3>
-
-<p>OK so, turns out the inclusion of figure captions in labels was caused by an ill-thought-out line I had written in <code>trouble.hva</code>:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'>\renewcommand{\AtBeginDocument}[1]{}
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>I had written this to &ldquo;prevent&rdquo; an error that was occurring when <code>hevea</code> was  reading the <code>.aux</code> file, but it also screwed up hyperref. It seems I can&rsquo;t get hyperref to work with hevea, and cleveref.</p>
-
-<h3>Giving up</h3>
-
-<p>After constructing a minimal example, I still couldn&rsquo;t identify a way to make autoref/cleverref references work.</p>
-
-<h2>Tex4ht</h2>
-
-<p>Someone suggested that <code>tex4ht</code> might work better than <code>hevea</code>, and at least it correctly processed my minimal example. That doen&rsquo;t mean it&rsquo;ll process the the whole thesis, though.</p>
-
-<p>The first problem is:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'>--- warning --- Can&#39;t find/open file `introduction_chapter.dvi&#39;
-</span><span class='line'>--- error --- Can&#39;t find/open file `introduction_chapter.dvi&#39;
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Which was because I was using <code>tex4ht</code> and not <code>htlatex</code>. Using <code>htlatex</code> I instead get:</p>
-
-<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-</pre></td><td class='code'><pre><code class='html'><span class='line'>! I can&#39;t find file `introduction_chapter.html&#39;.
-</span><span class='line'><span class="nt">&lt;to</span> <span class="na">be</span> <span class="na">read</span> <span class="na">again</span><span class="nt">&gt;</span>
-</span><span class='line'>                   \relax
-</span><span class='line'>l.79 \begin{document}
-</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Which is odd since that command is actually supposed to be making the file!</p>
-
-<p>So it must be failing at an earlier stage?</p>
 </div>
   
   
-
-
-    </article>
-  
-  
-    <article>
-      
-  <header>
-    
-      <h1 class="entry-title"><a href="/blog/2014/05/21/itunes-library-manipulation-with-python/">iTunes Library Manipulation With Python</a></h1>
-    
-    
-      <p class="meta">
-        
-
-
-
-
-
-
-
-
-  
-
-
-<time datetime="2014-05-21T12:13:36-07:00" pubdate data-updated="true">2014-05-21</time>
-        
-      </p>
-    
-  </header>
-
-
-  <div class="entry-content"><p>Current project: filter out duplicates and CDs with missing tracks from library.</p>
-
-<p>Using: Python/appscript.</p>
-
-<p>Er, first upgrading my Python/IPython?</p>
-
-<p>I followed <a href="http://stupidpythonideas.blogspot.com/2013/02/installing-scipy-etc-for-python-3-on-mac.html">these instructions</a>.</p>
-
-<p>Except that instead of <code>easy_install3.4 readline</code> do <code>pip3 install gnureadline</code>.</p>
-
-<p>And install an old gfortran? I get zombie errors referring to a nonexistent version of homebrew&rsquo;s gfortran.</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>brew install python3
-</span><span class='line'>pip install --upgrade pip
-</span><span class='line'>pip install ipython[notebook]</span></code></pre></td></tr></table></div></figure>
-
-
-<p>Dammit I just install a binary numpy.</p>
-</div>
-  
+    <footer>
+      <a rel="full-article" href="/blog/2014/07/25/hevea/">Read on &rarr;</a>
+    </footer>
   
 
 
@@ -567,73 +368,74 @@
 
   <div class="entry-content"><p>Why does whitespace-mode fuck up longlines mode when it&rsquo;s supposed to be disabled?</p>
 
-<p>I&rsquo;d like to edit markdown files with longlines-mode (word wrapping). Clearly when longlines-mode is enabled, I don&rsquo;t want to highlight 80+ char lines, as I_do when editing code. However, I still want the other whitespace-mode features (highlight trailing spaces, tabs, etc)</p>
-
-<p>I have, in my markdown-mode modehook:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>  (when whitespace-mode
-</span><span class='line'>    (whitespace-mode 'disable)
-</span><span class='line'>    (setq-local whitespace-style (remove 'lines-tail whitespace-style)))</span></code></pre></td></tr></table></div></figure>
-
-
-<p>It doesn&rsquo;t work. Lines longer than 80char still get highlighted.</p>
-
-<p>But indeed &lsquo;lines-tail does not appear in whitespace-style. However, too late: this came after whitespace-mode had initialized, and so it&rsquo;s already set up.</p>
-
-<p>Moving to a lighlighted char and doing <code>(face-at-point)</code> reveals <code>whitespace-line</code>.</p>
-
-<p>Disabling font-lock-mode disables all highlighting.</p>
-
-<p><code>font-lock-fontify-buffer</code> doesn&rsquo;t do it.</p>
-
-<p><code>font-lock-keywords-alist</code> does not contain anything pertaining to whitespace-mode.</p>
-
-<p>Hmmm. maybe I can locally redefine the face.</p>
-
-<p><code>font-lock-keywords</code> is not buffer local. It contains this:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>("^\\([^ \n]\\{4\\}\\|[^ \n]\\{0,3\\}    \\)\\{20\\}\\(.+\\)$"
-</span><span class='line'>(2 whitespace-line t))</span></code></pre></td></tr></table></div></figure>
-
-
-<p>If I remove <code>lines-tail</code> f rom <code>whitespace-style</code> before loading the buffer&hellip; the offending highlighting does not take place.</p>
-
-<p>So I need to to the remove before enabling whitespace mode? and make it buffer-local?</p>
-
-<p>So, I made sure that the modification to whitespace-style occurred before whitespace-mode was enabled. That did the trick, I think.</p>
-
-<p>So, here:</p>
-
-<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-<span class='line-number'>2</span>
-<span class='line-number'>3</span>
-<span class='line-number'>4</span>
-<span class='line-number'>5</span>
-<span class='line-number'>6</span>
-<span class='line-number'>7</span>
-<span class='line-number'>8</span>
-<span class='line-number'>9</span>
-<span class='line-number'>10</span>
-<span class='line-number'>11</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>(add-hook 'markdown-mode-hook 'pbm-markdown-fonts)
-</span><span class='line'>
-</span><span class='line'>(defun pbm-markdown-fonts ()
-</span><span class='line'>  ;Use variable pitch fonts, and wrap long lines.
-</span><span class='line'>  (variable-pitch-mode t)
-</span><span class='line'>  (if whitespace-mode
-</span><span class='line'>      (error "markdown mode needs configured before whitespace mode is enabled"))
-</span><span class='line'>  (setq-local whitespace-style (remove 'lines-tail whitespace-style))
-</span><span class='line'>  (visual-line-mode)
-</span><span class='line'>  (set-visual-wrap-column 75)
-</span><span class='line'>  (font-lock-fontify-buffer))</span></code></pre></td></tr></table></div></figure>
+<p>I&rsquo;d like to edit markdown files with longlines-mode (word wrapping). Clearly when longlines-mode is enabled, I don&rsquo;t want to highlight 80+ char lines, as I do when editing code. However, I still want the other whitespace-mode features (highlight trailing spaces, tabs, etc)</p>
 
 </div>
   
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/05/19/whitespace-mode/">Read on &rarr;</a>
+    </footer>
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/19/whitespace-mode/">Whitespace Mode</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-19T00:00:00-07:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><table>
+<tbody>
+<tr class="odd">
+<td align="left">layout: post</td>
+</tr>
+<tr class="even">
+<td align="left">title: &quot;whitespace-mode&quot;</td>
+</tr>
+<tr class="odd">
+<td align="left">date: 2014-05-19 21:00:35 -0700</td>
+</tr>
+<tr class="even">
+<td align="left">comments: true</td>
+</tr>
+<tr class="odd">
+<td align="left">categories: technote emacs</td>
+</tr>
+</tbody>
+</table>
+<p>Why does whitespace-mode fuck up longlines mode when it&#8217;s supposed to be disabled?</p>
+<p>I&#8217;d like to edit markdown files with longlines-mode (word wrapping). Clearly when longlines-mode is enabled, I don&#8217;t want to highlight 80+ char lines, as I do when editing code. However, I still want the other whitespace-mode features (highlight trailing spaces, tabs, etc)</p>
+</div>
+  
+  
+    <footer>
+      <a rel="full-article" href="/blog/2014/05/19/whitespace-mode/">Read on &rarr;</a>
+    </footer>
   
 
 
@@ -667,7 +469,9 @@
   </header>
 
 
-  <div class="entry-content"><p>I want to listen to this <a href="http://www.brap.fm/2014/05/14/the-shiso-room-yppah-guest-mix-16-05-14/">upcoming show</a> but don&rsquo;t know if it&rsquo;ll be downloadable later.</p>
+  <div class="entry-content"><p><em>(content note: this didn&rsquo;t work.)</em></p>
+
+<p>I want to listen to this <a href="http://www.brap.fm/2014/05/14/the-shiso-room-yppah-guest-mix-16-05-14/">upcoming show</a> but don&rsquo;t know if it&rsquo;ll be downloadable later.</p>
 
 <p>I worked out a VLC command line:</p>
 
@@ -697,11 +501,83 @@
 </pre></td><td class='code'><pre><code class=''><span class='line'>--sout "#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg}"</span></code></pre></td></tr></table></div></figure>
 
 
-<p>I don&rsquo;t know what&rsquo;s srong or missing about this, but VLC decided to treat it as a filename instead of the syntax in the <a href="http://www.videolan.org/doc/streaming-howto/en/ch03.html">docs</a>:</p>
+<p>I don&rsquo;t know what&rsquo;s wrong or missing about this, but VLC decided to treat it as a filename instead of the syntax in the <a href="http://www.videolan.org/doc/streaming-howto/en/ch03.html">docs</a>:</p>
 
 <figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
-</pre></td><td class='code'><pre><code class=''><span class='line'>[0x109c21840] filesystem access error: cannot open file /Users/peter/blog/#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg} (No such file or directory)</span></code></pre></td></tr></table></div></figure>
+</pre></td><td class='code'><pre><code class=''><span class='line'>[0x109c21840] filesystem access error: cannot open file /Users/peter/#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg} (No such file or directory)</span></code></pre></td></tr></table></div></figure>
 
+
+<p>Anyway, I forget what I did after that, but the VLC command never actually launched. There was an MP3 of the show available anyway.</p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2014/05/15/time-shifting-an-internet-stream/">Time Shifting an Internet Stream</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2014-05-15T00:00:00-07:00" pubdate data-updated="true"></time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><table>
+<tbody>
+<tr class="odd">
+<td align="left">layout: post</td>
+</tr>
+<tr class="even">
+<td align="left">title: &quot;Time shifting an internet stream with VLC&quot;</td>
+</tr>
+<tr class="odd">
+<td align="left">date: 2014-05-15 17:31:07 -0700</td>
+</tr>
+<tr class="even">
+<td align="left">comments: true</td>
+</tr>
+<tr class="odd">
+<td align="left">categories: technote fail</td>
+</tr>
+</tbody>
+</table>
+<p><em>(content note: this didn&#8217;t work.)</em></p>
+<p>I want to listen to this <a href="http://www.brap.fm/2014/05/14/the-shiso-room-yppah-guest-mix-16-05-14/">upcoming show</a> but don&#8217;t know if it&#8217;ll be downloadable later.</p>
+<p>I worked out a VLC command line:</p>
+<pre><code>/Applications/VLC.app/Contents/MacOS/VLC \
+http://delicious.wavestreamer.com:4626/listen.pls?sid=1 \
+    vlc://quit \
+    --network-caching=10000 \
+    --sout /Users/peter/2014-05-16_yppah_shisho_room_mix.ogg \
+    --run-time=7400 \
+    --intf rc</code></pre>
+<p>I put the command in an executable <code>.sh</code> file and scheduled it to run using LaunchControl.</p>
+<h3 id="huh">huh?</h3>
+<p>Note that I mistakenly tried to actually read the documentation and used <code>--sout &quot;#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg}&quot;</code></p>
+<p>I don&#8217;t know what&#8217;s wrong or missing about this, but VLC decided to treat it as a filename instead of the syntax in the <a href="http://www.videolan.org/doc/streaming-howto/en/ch03.html">docs</a>:</p>
+<pre><code>[0x109c21840] filesystem access error: cannot open file /Users/peter/#standard{access=file,mux=ogg,dst=/Users/peter/2014-05-16_yppah_shisho_room_mix.ogg} (No such file or directory)</code></pre>
+<p>Anyway, I forget what I did after that, but the VLC command never actually launched. There was an MP3 of the show available anyway.</p>
 </div>
   
   
@@ -740,7 +616,7 @@
       </li>
     
       <li class="post">
-        <a href="/blog/2014/08/23/a-strange-writing-tic/">A Strange Writing Tic</a>
+        <a href="/blog/2014/08/16/replace-less-with-emacs/">Replace Less With Emacs</a>
       </li>
     
   </ul>

@@ -4,7 +4,7 @@
   <title><![CDATA[Category: Emacs | Illusory stillness]]></title>
   <link href="http://crowding.github.io/blog/categories/emacs/atom.xml" rel="self"/>
   <link href="http://crowding.github.io/"/>
-  <updated>2014-09-23T22:55:07-07:00</updated>
+  <updated>2014-09-23T23:16:11-07:00</updated>
   <id>http://crowding.github.io/</id>
   <author>
     <name><![CDATA[Peter Meilstrup]]></name>
@@ -413,7 +413,7 @@ Compiling /Users/peter/sicp/chap2.4.rkt &hellip;</p>
 <p>Error: retort-syntax</p>
 
 <p>(mcons (mcons &lsquo;result (mcons &ldquo;#<void>&rdquo; &rsquo;())) (mcons (mcons &lsquo;output &ldquo;&rdquo;) &rsquo;()))
-<a href="&#x6d;&#x61;&#105;&#x6c;&#x74;&#x6f;&#58;&#x72;&#x61;&#99;&#107;&#101;&#x74;&#64;&#x63;&#104;&#x61;&#112;&#x32;&#46;&#52;&#46;&#x72;&#x6b;&#116;">&#x72;&#97;&#99;&#107;&#101;&#116;&#x40;&#x63;&#104;&#97;&#x70;&#50;&#x2e;&#52;&#x2e;&#x72;&#x6b;&#x74;</a>>
+<a href="&#109;&#97;&#105;&#x6c;&#x74;&#111;&#58;&#x72;&#97;&#x63;&#x6b;&#101;&#x74;&#x40;&#x63;&#x68;&#97;&#112;&#50;&#x2e;&#x34;&#46;&#x72;&#x6b;&#116;">&#x72;&#97;&#99;&#x6b;&#101;&#x74;&#64;&#99;&#x68;&#x61;&#112;&#x32;&#46;&#x34;&#46;&#x72;&#107;&#116;</a>>
 ```</p>
 
 <p>&ldquo;Retort-syntax&rdquo;? WTH?</p>
@@ -450,6 +450,77 @@ Compiling /Users/peter/sicp/chap2.4.rkt &hellip;</p>
 <h3>Weird issues</h3>
 
 <p>Occasionally in the Geiser REPL I will be unable to use <code>C-a</code> to go to back to the prompt, if point is at the end of buffer. What gives?</p>
+]]></content>
+  </entry>
+  
+  <entry>
+    <title type="html"><![CDATA[Whitespace-mode]]></title>
+    <link href="http://crowding.github.io/blog/2014/05/19/whitespace-mode/"/>
+    <updated>2014-05-19T21:00:35-07:00</updated>
+    <id>http://crowding.github.io/blog/2014/05/19/whitespace-mode</id>
+    <content type="html"><![CDATA[<p>Why does whitespace-mode fuck up longlines mode when it&rsquo;s supposed to be disabled?</p>
+
+<p>I&rsquo;d like to edit markdown files with longlines-mode (word wrapping). Clearly when longlines-mode is enabled, I don&rsquo;t want to highlight 80+ char lines, as I do when editing code. However, I still want the other whitespace-mode features (highlight trailing spaces, tabs, etc)</p>
+
+<!-- more -->
+
+
+<p>I have, in my markdown-mode modehook:</p>
+
+<p>```
+  (when whitespace-mode</p>
+
+<pre><code>(whitespace-mode 'disable)
+(setq-local whitespace-style (remove 'lines-tail whitespace-style)))
+</code></pre>
+
+<p>```</p>
+
+<p>It doesn&rsquo;t work. Lines longer than 80char still get highlighted.</p>
+
+<p>But indeed &lsquo;lines-tail does not appear in whitespace-style. However, too late: this came after whitespace-mode had initialized, and so it&rsquo;s already set up.</p>
+
+<p>Moving to a lighlighted char and doing <code>(face-at-point)</code> reveals <code>whitespace-line</code>.</p>
+
+<p>Disabling font-lock-mode disables all highlighting.</p>
+
+<p><code>font-lock-fontify-buffer</code> doesn&rsquo;t do it.</p>
+
+<p><code>font-lock-keywords-alist</code> does not contain anything pertaining to whitespace-mode.</p>
+
+<p>Hmmm. maybe I can locally redefine the face.</p>
+
+<p><code>font-lock-keywords</code> is not buffer local. It contains this:</p>
+
+<p><code>
+("^\\([^    \n]\\{4\\}\\|[^ \n]\\{0,3\\}    \\)\\{20\\}\\(.+\\)$"
+(2 whitespace-line t))
+</code></p>
+
+<p>If I remove <code>lines-tail</code> f rom <code>whitespace-style</code> before loading the buffer&hellip; the offending highlighting does not take place.</p>
+
+<p>So I need to to the remove before enabling whitespace mode? and make it buffer-local?</p>
+
+<p>So, I made sure that the modification to whitespace-style occurred before whitespace-mode was enabled. That did the trick, I think.</p>
+
+<p>So, here:</p>
+
+<p>```
+(add-hook &lsquo;markdown-mode-hook 'pbm-markdown-fonts)</p>
+
+<p>(defun pbm-markdown-fonts ()
+  ;Use variable pitch fonts, and wrap long lines.
+  (variable-pitch-mode t)
+  (if whitespace-mode</p>
+
+<pre><code>  (error "markdown mode needs configured before whitespace mode is enabled"))
+</code></pre>
+
+<p>  (setq-local whitespace-style (remove &lsquo;lines-tail whitespace-style))
+  (visual-line-mode)
+  (set-visual-wrap-column 75)
+  (font-lock-fontify-buffer))
+```</p>
 ]]></content>
   </entry>
   
